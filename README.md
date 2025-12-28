@@ -7,7 +7,8 @@
 4. Constraints  
 5. Backend (API & Infrastructure)  
 6. Data Flow (Backend to Frontend)  
-7. Roadmap  
+7. Lecturer Client-Side Architecture
+8. Roadmap
 
 ---
 
@@ -221,7 +222,26 @@ Frontend → Next.js API Route → Mongoose → MongoDB → API Response → Fro
 
 ---
 
-## 7. Roadmap (According to the Course)
+## 7. Lecturer Client-Side Architecture
+
+The lecturer interface is implemented using Next.js App Router and React components.
+The client-side architecture follows a hierarchical component-based design, aligned with the course guidelines.
+
+The architecture separates concerns into logical component groups:
+- GUIComponents – reusable UI elements (inputs, tables, charts, buttons)
+- UserComponents – lecturer authentication and profile-related components
+- TeamsComponents – team overview, team details, insights, alerts, reflections, and chatbot conversation history
+- AnnouncementsComponents – publishing and viewing announcements/tasks
+- AlertsComponents – alerts history and abnormal status notifications
+- Header – navigation menu and logout functionality
+
+The full client-side architecture diagram for the lecturer area is provided below.
+<img width="1911" height="650" alt="image" src="https://github.com/user-attachments/assets/05ad4d96-5cae-40a4-89e0-69d665dda3d1" />
+
+
+---
+
+## 8. Roadmap (According to the Course)
 
 ### 1️⃣ Logic & Design
 - Entity definitions (Lecturer, Team, etc.)
