@@ -141,6 +141,9 @@ Each folder represents an API endpoint and contains a `route.js` file.
   Updates team data (project info, members, status).  
   Automatically creates an alert if the team status changes to an abnormal state (`yellow` / `red`).
 
+- **GET `/api/teams/[teamId]/insights`**  
+  Returns textual insights, strengths, risks and basic metrics for a specific team.
+
 #### 3. Reflections
 - **POST `/api/reflections`**  
   Submits a reflection from a team member.  
