@@ -75,6 +75,14 @@
 - `targetTeams`
 - `createdAt`
 
+### ChatSession
+**Description:** Represents a documented conversation between a team and the chatbot.
+Stores the full conversation history (user and bot messages) for research and analysis purposes.
+- `_id`
+- `teamId`
+- `messages: [{ role, text, createdAt }]`
+- `createdAt`
+- `updatedAt`
 ---
 
 ## 3. Database Entity Relationships
@@ -92,6 +100,9 @@
 - **Lecturer → Alert** (Logical One-to-Many)  
   All alerts are sent to the single lecturer in the system.
 
+- **Team → ChatSession** (One-to-One)  
+  Each team has a single chat session that stores the full chatbot conversation history.
+
 ---
 
 ## 4. Constraints
@@ -100,6 +111,7 @@
 - `memberId` must be unique within a specific team.
 - Only one reflection is allowed per `teamId + memberId` within a defined time period (application-level rule).
 - The system contains a single lecturer.
+- Only one chat session is allowed per team (`teamId` is unique in ChatSession).
 
 ---
 
@@ -143,6 +155,12 @@ Each folder represents an API endpoint and contains a `route.js` file.
 
 - **GET `/api/teams/[teamId]/insights`**  
   Returns textual insights, strengths, risks and basic metrics for a specific team.
+
+- **GET `/api/teams/[teamId]/chat`**  
+  Returns the full chatbot conversation history for a specific team.
+
+- **POST `/api/teams/[teamId]/chat`**  
+  Appends a new message (user or bot) to the team chat history.
 
 #### 3. Reflections
 - **POST `/api/reflections`**  
@@ -191,6 +209,9 @@ Each API route:
 3. The route uses the relevant Mongoose model to apply business logic.
 4. Mongoose reads/writes data in MongoDB.
 5. A JSON response is returned to the frontend.
+
+Chatbot conversations are persisted in the database via the ChatSession entity.
+Each user or bot message is sent through the API and appended to the team chat history.
 
 **In general:**  
 Frontend → Backend → Database → Backend → Frontend
