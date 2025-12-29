@@ -226,9 +226,6 @@ Each API route:
 4. Mongoose reads/writes data in MongoDB.
 5. A JSON response is returned to the frontend.
 
-Chatbot conversations are persisted in the database via the ChatSession entity.
-Each user or bot message is sent through the API and appended to the team chat history.
-
 **In general:**  
 Frontend → Backend → Database → Backend → Frontend
 
