@@ -247,6 +247,7 @@ The following dependencies are required to run the project.
 
 1. npm install chart.js react-chartjs-2   (charts)
 2. npm install recharts   (charts)
+3. npm install
 
 first page: "http://localhost:3000"     - choose lecturer/team
 
