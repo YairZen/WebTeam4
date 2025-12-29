@@ -217,7 +217,7 @@ Each API route:
 
 ---
 
-## 7. Data Flow
+## 7. Data Flow (Backend to Frontend) 
 
 ### How the system works
 1. The frontend sends an HTTP request to an API endpoint (GET / POST / PUT).
