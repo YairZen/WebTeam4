@@ -17,16 +17,18 @@
 
 ### Frontend (UI & Pages)
 - `app/`
+- `app/lecturer`
+- `app/team`
 
 ### Backend (API Routes – Next.js App Router)
 - `app/api/`
 
 ### Backend (Infrastructure & Data Access)
 - `lib/` – database connection
-- `models/` – Mongoose schemas
+- `models/` – Mongoose schemas  (structure of the data in each table)
 
 ### Database
-- MongoDB (local instance) accessed via Mongoose
+- Atlas MongoDB (remote) accessed via Mongoose
 
 ---
 
@@ -246,8 +248,8 @@ The full client-side architecture diagram for the lecturer area is provided belo
 The following dependencies are required to run the project.
 open the project in VS Code terminal and run:
 םפק
-1. npm install chart.js react-chartjs-2   (charts)
-2. npm install recharts   (charts)
+1. npm install chart.js react-chartjs-2   //(charts)
+2. npm install recharts   //(charts)
 3. npm install
 
 4. npm run dev
