@@ -9,7 +9,6 @@
 6. Backend (API & Infrastructure)  
 7. Data Flow (Backend to Frontend)  
 8. Lecturer Client-Side Architecture
-9. Roadmap
 
 ---
 
@@ -255,44 +254,3 @@ The full client-side architecture diagram for the lecturer area is provided belo
 <img width="1911" height="650" alt="image" src="https://github.com/user-attachments/assets/05ad4d96-5cae-40a4-89e0-69d665dda3d1" />
 
 ---
-
-## 9. Roadmap (According to the Course)
-
-### 1️⃣ Logic & Design
-- Entity definitions (Lecturer, Team, etc.)
-- Relationships and constraints  
-**Status:** ✅ Completed
-
-### 2️⃣ Database (MongoDB)
-- Database and collections creation
-- Test data insertion  
-**Status:** ✅ Completed
-
-### 3️⃣ Project Setup (Next.js)
-- Repository setup
-- Next.js project initialization  
-**Status:** ✅ Completed
-
-### 4️⃣ Backend Infrastructure
-- MongoDB connection with Mongoose
-- Schema definitions  
-**Status:** ✅ Completed
-
-### 5️⃣ API Routes
-- Lecturer login
-- Team join
-- Reflection submission
-- Alerts and announcements  
-**Status:** ✅ Completed
-
-### 6️⃣ Frontend (React / App Router)
-- Pages
-- Forms
-- Dashboard  
-**Status:** ⏭️ In Progress
-
-### 7️⃣ Polishing & Submission
-- Validation
-- UX improvements
-- Final README  
-**Status:** ⏭️ Pending
