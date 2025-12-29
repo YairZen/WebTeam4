@@ -50,7 +50,7 @@ export default function LecturerDashboardPage() {
         <DashboardCard
           title="Alerts & Notifications"
           description="View abnormal team states and alerts history"
-          href="/lecturer/dashboard"
+          href="/lecturer/alerts"
         />
 
       </section>
