@@ -243,8 +243,10 @@ The full client-side architecture diagram for the lecturer area is provided belo
 ---
 ## 8. Environment Setup & Dependencies
 
-1. npm install chart.js react-chartjs-2
-2. npm install recharts
+The following dependencies are required to run the project.
+
+1. npm install chart.js react-chartjs-2   (charts)
+2. npm install recharts   (charts)
 
 first page: "http://localhost:3000"     - choose lecturer/team
 
