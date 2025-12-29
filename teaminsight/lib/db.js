@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
-const MONGO_URI = "mongodb://127.0.0.1:27017/teaminsight";
+
+// connect to online mongo db
+const MONGO_URI = "mongodb+srv://yairzen:123456Aa@cluster0.8d8voyd.mongodb.net/teaminsight";
+
+
 
 // singelton design pattern :
 // to avoid multiple connections in dev
