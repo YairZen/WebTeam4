@@ -1,14 +1,14 @@
 # TeamInsight – README
 
 ## Contents
-1. Project Structure  
-2. Database Entities  
-3. Database Entity Relationships  
-4. Constraints  
-5. Backend (API & Infrastructure)  
-6. Data Flow (Backend to Frontend)  
-7. Lecturer Client-Side Architecture
-8. Environment Setup & Dependencies
+1. Project Structure
+2. Quick Start: Environment & Dependencies
+3. Database Entities  
+4. Database Entity Relationships  
+5. Constraints  
+6. Backend (API & Infrastructure)  
+7. Data Flow (Backend to Frontend)  
+8. Lecturer Client-Side Architecture
 9. Roadmap
 
 ---
@@ -32,7 +32,20 @@
 
 ---
 
-## 2. Database Entities
+## 2. Quick Start: Environment & Dependencies
+
+Open the project root in VS Code (`teaminsight`) and run in the terminal:
+
+1. `npm install`
+2. `npm run dev`
+
+
+First page: http://localhost:3000  
+Choose **Lecturer** or **Team**.
+
+---
+
+## 3. Database Entities
 
 ### Lecturer
 **Description:** Represents the system administrator (lecturer) for authentication and receiving alerts.
@@ -89,7 +102,7 @@ Stores the full conversation history (user and bot messages) for research and an
 - `updatedAt`
 ---
 
-## 3. Database Entity Relationships
+## 4. Database Entity Relationships
 
 - **Team → Reflection** (One-to-Many)  
   A single team can have multiple reflections.  
@@ -109,7 +122,7 @@ Stores the full conversation history (user and bot messages) for research and an
 
 ---
 
-## 4. Constraints
+## 5. Constraints
 
 - `Team.teamId` must be unique.
 - `memberId` must be unique within a specific team.
@@ -119,7 +132,7 @@ Stores the full conversation history (user and bot messages) for research and an
 
 ---
 
-## 5. Backend (API & Infrastructure)
+## 6. Backend (API & Infrastructure)
 
 ### Backend Overview
 The backend is implemented using the Next.js App Router.  
@@ -205,7 +218,7 @@ Each API route:
 
 ---
 
-## 6. Data Flow
+## 7. Data Flow
 
 ### How the system works
 1. The frontend sends an HTTP request to an API endpoint (GET / POST / PUT).
@@ -225,7 +238,7 @@ Frontend → Next.js API Route → Mongoose → MongoDB → API Response → Fro
 
 ---
 
-## 7. Lecturer Client-Side Architecture
+## 8. Lecturer Client-Side Architecture
 
 The lecturer interface is implemented using Next.js App Router and React components.
 The client-side architecture follows a hierarchical component-based design, aligned with the course guidelines.
@@ -240,21 +253,6 @@ The architecture separates concerns into logical component groups:
 
 The full client-side architecture diagram for the lecturer area is provided below.
 <img width="1911" height="650" alt="image" src="https://github.com/user-attachments/assets/05ad4d96-5cae-40a4-89e0-69d665dda3d1" />
-
-
----
-## 8. Environment Setup & Dependencies
-
-The following dependencies are required to run the project.
-
-open the project in VS Code terminal and run:
-
-1. npm install chart.js react-chartjs-2   //(charts)
-2. npm install recharts   //(charts)
-3. npm install
-
-4. npm run dev
-first page: "http://localhost:3000"     - choose lecturer/team
 
 ---
 
