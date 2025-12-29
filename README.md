@@ -244,11 +244,13 @@ The full client-side architecture diagram for the lecturer area is provided belo
 ## 8. Environment Setup & Dependencies
 
 The following dependencies are required to run the project.
-
+open the project in VS Code terminal and run:
+םפק
 1. npm install chart.js react-chartjs-2   (charts)
 2. npm install recharts   (charts)
 3. npm install
 
+4. npm run dev
 first page: "http://localhost:3000"     - choose lecturer/team
 
 ---
