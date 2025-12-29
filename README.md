@@ -8,7 +8,8 @@
 5. Backend (API & Infrastructure)  
 6. Data Flow (Backend to Frontend)  
 7. Lecturer Client-Side Architecture
-8. Roadmap
+8. Environment Setup & Dependencies
+9. Roadmap
 
 ---
 
@@ -240,8 +241,16 @@ The full client-side architecture diagram for the lecturer area is provided belo
 
 
 ---
+## 8. Environment Setup & Dependencies
 
-## 8. Roadmap (According to the Course)
+1. npm install chart.js react-chartjs-2
+2. npm install recharts
+
+first page: "http://localhost:3000"     - choose lecturer/team
+
+---
+
+## 9. Roadmap (According to the Course)
 
 ### 1️⃣ Logic & Design
 - Entity definitions (Lecturer, Team, etc.)
