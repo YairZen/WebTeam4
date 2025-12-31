@@ -1,313 +1,256 @@
 # TeamInsight – README
 
 ## Contents
-1. AI – Chat & Guided Reflection (Gemini)
+1. AI – Team Free Chat & Guided Reflection (Gemini)
 2. Project Structure
-3. Database Entities
-4. Database Entity Relationships
+3. Database Entities (MongoDB / Mongoose)
+4. Entity Relationships
 5. Constraints
-6. Backend (API & Infrastructure)
-7. Data Flow (Backend to Frontend)
-8. Lecturer Client-Side Architecture
+6. Backend (API Routes)
+7. Data Flow
+8. Lecturer UI Architecture
 9. Environment Setup & Dependencies
 10. Roadmap
 
 ---
 
-## 1) AI – Chat & Guided Reflection (Gemini)
+## 1) AI – Team Free Chat & Guided Reflection (Gemini)
 
-ב־TeamInsight יש שני מסלולי שימוש ב-AI (Gemini), עם מטרות שונות:
+TeamInsight provides two AI-based experiences powered by Gemini:
 
 ### A) Team Free Chat
-**מטרה:** שיח חופשי לצוות (ייעוץ פרקטי, פתרון בעיות יום־יומיות, שיפור תהליך).  
-**התנהגות:** ה-AI יכול לענות ישירות; אם חסר הקשר — שואל שאלת הבהרה אחת.  
-**שמירה:** פר־טאב (כדי לשרוד Refresh). סגירת הטאב/חלון יכולה לסיים את השיחה.  
+**Goal:** Free-form team conversation for practical advice, day-to-day collaboration issues, and execution improvements.  
+**Behavior:** The AI may answer directly. If essential context is missing, it asks one clarifying question.  
+**State:** Per-tab (UI state can survive refresh). Closing the tab/window may end the conversation.  
 **UI:** `/team/chat`  
 **API:** `POST /api/team/ai/free`
 
 ### B) Guided Reflection (DB-driven)
-**מטרה:** תהליך מובנה של רפלקציה שבועית/תקופתית עם שאלות בסדר קבוע.  
-**כללים:** בכל הודעה הבוט שואל שאלה אחת בלבד.  
-**סדר השאלות:** נקבע ע״י השרת/DB בעזרת `currentIndex` + `REFLECTION_QUESTIONS`.  
-**Session פר־טאב:** לכל טאב יש `sessionId` משלו (כדי לאפשר רפלקציות במקביל).  
-**שמירה:** נשמר במסד (שאלות/תשובות, סטטוס, סיכום AI) לצורך הפקת תובנות.  
+**Goal:** A structured reflection flow with a fixed question order (weekly/periodic).  
+**Rule:** The assistant asks exactly one question per message.  
+**Flow control:** The server/database controls progression using `currentIndex` + `REFLECTION_QUESTIONS`.  
+**Session per tab:** Each browser tab has its own `sessionId` (parallel reflections are supported).  
+**Persistence:** Stored in MongoDB (answers, status, summary) to support insights later.  
 **UI:** `/team/reflection`  
 **API:**
 - `POST /api/team/reflection/start`
 - `POST /api/team/reflection/message`
 - `POST /api/team/reflection/submit`
 
-### איפה מוגדרים ה-Prompts וההרצה של Gemini?
-- `lib/ai/prompts.ts` – פרומפטים (כתובים באנגלית), הפלט והשיחה בעברית.
-- `lib/ai/gemini.ts` – מעטפת עבודה עם Gemini והפונקציות הרלוונטיות.
-- `lib/reflection/questions.ts` – רשימת השאלות לרפלקציה והסדר שלהן.
+### Gemini prompts and runtime locations
+- `lib/ai/prompts.ts` – prompts (written in English); assistant output is Hebrew.
+- `lib/ai/gemini.ts` – Gemini wrapper (`@google/genai`) and helper functions.
+- `lib/reflection/questions.ts` – reflection questions and ordering used by the server/DB.
 
 ---
 
 ## 2) Project Structure
 
-### Frontend (UI & Pages)
+### Frontend (Next.js App Router)
 - `app/`
-- `app/lecturer/`
-- `app/team/`
-  - Public:
-    - `app/team/(public)/join/page.tsx` – Team login page (Team ID + Access Code)
-  - Protected:
-    - `app/team/(protected)/layout.tsx` – Protected team layout (wraps pages with `TeamGate`)
-    - `app/team/(protected)/page.tsx` – Team home (loads team data from `GET /api/team/me`)
-    - `app/team/(protected)/chat/page.tsx` – Team Free Chat page
-      - `app/team/(protected)/chat/Chat.tsx`
-    - `app/team/(protected)/reflection/page.tsx` – Team Guided Reflection page
-      - `app/team/(protected)/reflection/ReflectionChat*.tsx`
-    - `app/team/(protected)/info/page.tsx` – Team info page
-    - `app/team/(protected)/messages/page.tsx` – Team messages (threads UI)
-  - Shared components:
-    - `app/team/_components/TeamGate.tsx` – route protection (calls `GET /api/team/me`)
-    - `app/team/_components/TeamTabs.tsx` – team navigation tabs
+  - `app/team/`
+    - Public:
+      - `app/team/(public)/join/page.tsx` – team login (Team ID + Access Code)
+      - `app/team/(public)/layout.tsx`
+    - Protected:
+      - `app/team/(protected)/layout.tsx` – wraps protected pages with `TeamGate`
+      - `app/team/(protected)/page.tsx` – team home
+      - `app/team/(protected)/chat/page.tsx` – team free chat UI
+        - `app/team/(protected)/chat/Chat.tsx`
+      - `app/team/(protected)/reflection/page.tsx` – guided reflection UI
+        - `app/team/(protected)/reflection/ReflectionChat.tsx`
+      - `app/team/(protected)/messages/page.tsx` – threads UI (team ↔ lecturer)
+      - `app/team/(protected)/info/page.tsx` – team info UI
+    - Shared:
+      - `app/team/_components/TeamGate.tsx` – protects team routes using `GET /api/team/me`
+      - `app/team/_components/TeamTabs.tsx` – navigation tabs
 
 ### Backend (API Routes – Next.js App Router)
 - `app/api/`
+  - Global:
+    - `app/api/alerts/route.js`
+    - `app/api/announcements/route.js`
+    - `app/api/analytics/teams/route.js`
+    - `app/api/analytics/compare/route.js`
+    - `app/api/lecturer/login/route.js`
+    - `app/api/reflections/route.js`
+  - Team-scoped (cookie auth):
+    - `app/api/team/join/route.js`
+    - `app/api/team/me/route.js`
+    - `app/api/team/messages/route.js`
+    - `app/api/team/messages/[threadId]/route.js`
+    - AI (Gemini):
+      - `app/api/team/ai/free/route.ts`
+      - `app/api/team/ai/feedback/route.ts`
+    - Guided reflection:
+      - `app/api/team/reflection/start/route.ts`
+      - `app/api/team/reflection/message/route.ts`
+      - `app/api/team/reflection/submit/route.ts`
+  - Lecturer/admin team endpoints:
+    - `app/api/teams/route.js`
+    - `app/api/teams/[teamId]/route.js`
+    - `app/api/teams/[teamId]/insights/route.js`
+    - `app/api/teams/[teamId]/alerts/route.js`
+    - `app/api/teams/[teamId]/chat/route.js`
+    - `app/api/teams/[teamId]/reflections/route.js`
 
-### Backend (Infrastructure & Shared Utilities)
+### Server utilities
 - `lib/`
   - `lib/db.js` – MongoDB connection (Mongoose)
-  - `lib/teamSession.js` – session signing/verification for the `team_session` cookie
-  - `lib/ai/` – Gemini integration (`gemini.ts`, `prompts.ts`)
+  - `lib/teamSession.js` – signing/verifying the `team_session` cookie
+  - `lib/ai/` – Gemini integration
+    - `lib/ai/gemini.ts`
+    - `lib/ai/prompts.ts`
   - `lib/reflection/questions.ts` – reflection questions list/order
 
-### Database Models (Mongoose)
-- `models/` – schemas/collections
-  - כולל מודלים קיימים, וגם מודלים למסרים ולרפלקציה מונחית.
-
-### Database
-- MongoDB Atlas (remote) accessed via Mongoose
+### Database models (Mongoose)
+- `models/`
+  - `Alert.js`
+  - `Announcement.js`
+  - `ChatSession.js`
+  - `Lecturer.js`
+  - `MessageThread.js`
+  - `MessageMessage.js`
+  - `Reflection.js`
+  - `ReflectionChatSession.js`
+  - `Team.js`
 
 ---
 
-## 3) Database Entities
-
-> הפרויקט כולל מודלים קיימים לצד מודלים נוספים. כולם נשארים בפרויקט.
+## 3) Database Entities (MongoDB / Mongoose)
 
 ### Lecturer
-**Description:** Represents the lecturer (admin) for authentication and receiving alerts.
-- `_id`
-- `email`
-- `passwordHash`
-- `createdAt`
+- email, passwordHash, timestamps
 
 ### Team
-**Description:** Represents a single project team. Interactions are performed at the team level.
-- `_id`
-- `teamId`
-- `projectName`
-- `accessCode`
-- `contactEmail`
-- `members: [{ memberId, displayName }]`
-- `status`
-- `createdAt`
+- teamId, projectName, accessCode, contactEmail, members, status, timestamps
 
 ### Reflection
-**Description:** Personal feedback submission by a team member (stored for history/analysis).
-- `_id`
-- `teamId`
-- `memberId`
-- `answers` (length 5)
-- `freeText`
-- `createdAt`
+- teamId, memberId, answers (length 5), freeText, timestamps
 
 ### ReflectionChatSession
-**Description:** Guided reflection conversation session (session per tab).
-- `_id`
-- `teamId`
-- `sessionId`
-- `status` (`in_progress` / `ready_to_submit` / `submitted`)
-- `currentIndex`
-- `messages: [{ role, text, createdAt }]`
-- `answers: [{ questionId, prompt, answer, createdAt }]`
-- `aiSummary`
-- `createdAt`
-- `updatedAt`
-
-### Alert
-**Description:** Abnormal system event and alert history.
-- `_id`
-- `teamId`
-- `severity`
-- `message`
-- `emailTo`
-- `emailStatus`
-- `createdAt`
-
-### Announcement
-**Description:** Announcements/tasks from lecturer to teams.
-- `_id`
-- `title`
-- `body`
-- `targetTeams`
-- `createdAt`
+- teamId, sessionId
+- status: in_progress | ready_to_submit | submitted
+- currentIndex
+- messages[] (role, text, timestamps)
+- answers[] (questionId, prompt, answer, timestamps)
+- aiSummary
+- timestamps
 
 ### ChatSession
-**Description:** Stored chatbot conversation history per team (existing model).
-- `_id`
-- `teamId`
-- `messages: [{ role, text, createdAt }]`
-- `createdAt`
-- `updatedAt`
+- teamId (unique), messages[], timestamps
 
 ### MessageThread
-**Description:** Thread between a team and the lecturer (mail/board style).
-- `_id`
-- `teamId`
-- `subject`
-- `lastMessageAt`
-- `lastMessageText`
-- `lastMessageRole` (`team` / `lecturer`)
-- `unreadForTeam`
-- `unreadForLecturer`
-- `status` (`open` / `closed`)
-- `createdAt`
-- `updatedAt`
+- teamId, subject
+- lastMessageAt, lastMessageText, lastMessageRole
+- unreadForTeam, unreadForLecturer
+- status: open | closed
+- timestamps
 
 ### MessageMessage
-**Description:** Single message inside a thread.
-- `_id`
-- `threadId`
-- `teamId`
-- `role` (`team` / `lecturer`)
-- `text`
-- `createdAt`
+- threadId, teamId, role, text, timestamps
+
+### Alert / Announcement
+- standard administrative entities for monitoring and broadcast.
 
 ---
 
-## 4) Database Entity Relationships
+## 4) Entity Relationships
 
-- **Team → Reflection** (One-to-Many)
-- **Team → ReflectionChatSession** (One-to-Many)
-- **Team → Alert** (One-to-Many)
-- **Announcement → Team** (Broadcast by list / "all")
-- **Team → ChatSession** (Per-team stored history)
-- **Team → MessageThread** (One-to-Many)
-- **MessageThread → MessageMessage** (One-to-Many)
+- Team → Reflection (one-to-many)
+- Team → ReflectionChatSession (one-to-many)
+- Team → ChatSession (per team stored history)
+- Team → MessageThread (one-to-many)
+- MessageThread → MessageMessage (one-to-many)
+- Team → Alert (one-to-many)
+- Announcement → Team (broadcast by list or "all")
 
 ---
 
 ## 5) Constraints
 
-- `Team.teamId` must be unique.
-- `memberId` must be unique within a specific team.
-- ReflectionChatSession:
-  - (`teamId`, `sessionId`) must be unique.
-  - `currentIndex` defines the active reflection question.
-- Messages:
-  - `MessageThread.teamId` is required and indexed.
-  - `MessageMessage.threadId` is required.
+- `Team.teamId` is unique.
+- `ReflectionChatSession`: (`teamId`, `sessionId`) is unique.
+- `ReflectionChatSession.currentIndex` defines the active question.
+- `MessageThread.teamId` is required and indexed.
+- `MessageMessage.threadId` is required.
 
 ---
 
-## 6) Backend (API & Infrastructure)
+## 6) Backend (API Routes)
 
-### Backend Overview
-The backend is implemented using the Next.js App Router.
-Responsibilities:
-- MongoDB connection (Mongoose)
-- Business logic
-- API endpoints
-- Gemini integration (AI)
-
-### Team Authentication (Session Cookie)
-After a successful `POST /api/team/join`, the server sets an httpOnly cookie named `team_session`.
-This cookie authenticates subsequent requests (e.g., `GET /api/team/me`).
-
-Session signing/verification:
-- `lib/teamSession.js`
-
-### Implemented API Routes
-
-#### Authentication
+### Authentication
 - `POST /api/lecturer/login`
 
-#### Team (cookie auth)
-- `POST /api/team/join`
-- `GET /api/team/me`
+### Team (cookie auth)
+- `POST /api/team/join` – validates teamId + accessCode, sets `team_session` (httpOnly)
+- `GET /api/team/me` – returns the authenticated team by `team_session`
 
-#### Team AI (Gemini)
+### Team AI (Gemini)
 - `POST /api/team/ai/free`
 - `POST /api/team/ai/feedback`
 
-#### Guided Reflection
+### Guided Reflection
 - `POST /api/team/reflection/start`
 - `POST /api/team/reflection/message`
 - `POST /api/team/reflection/submit`
 
-#### Teams (lecturer/admin view)
-- `GET /api/teams`
-- `GET /api/teams/[teamId]`
-- `PUT /api/teams/[teamId]`
-- `GET /api/teams/[teamId]/insights`
-- `GET /api/teams/[teamId]/chat`
-- `POST /api/teams/[teamId]/chat`
-
-#### Team Messages
+### Team messages (threads)
 - `GET /api/team/messages`
 - `POST /api/team/messages`
 - `GET /api/team/messages/[threadId]`
 - `POST /api/team/messages/[threadId]`
 
-#### Reflections
-- `POST /api/reflections`
+### Lecturer/admin teams
+- `GET /api/teams`
+- `GET /api/teams/[teamId]`
+- `PUT /api/teams/[teamId]`
+- `GET /api/teams/[teamId]/insights`
+- `GET /api/teams/[teamId]/alerts`
+- `GET /api/teams/[teamId]/chat`
+- `POST /api/teams/[teamId]/chat`
 - `GET /api/teams/[teamId]/reflections`
 
-#### Alerts
+### Global
 - `POST /api/alerts`
-- `GET /api/teams/[teamId]/alerts`
-
-#### Announcements
-- `POST /api/announcements`
-- `GET /api/announcements`
-
-#### Analytics
+- `GET/POST /api/announcements`
 - `GET /api/analytics/teams`
 - `GET /api/analytics/compare`
+- `POST /api/reflections`
 
 ---
 
-## 7) Data Flow (Backend to Frontend)
+## 7) Data Flow
 
-### High level
-Frontend → Next.js API Route → Mongoose → MongoDB → API Response → Frontend
+### Team authentication (cookie session)
+1. UI calls `POST /api/team/join`.
+2. Server sets `team_session` (httpOnly).
+3. Protected pages validate via `GET /api/team/me` (used by `TeamGate.tsx`).
 
-### Team Login Flow (Cookie Session)
-1. Team submits `teamId` + `accessCode` via `POST /api/team/join`.
-2. Server sets `team_session` (httpOnly cookie).
-3. Protected UI calls `GET /api/team/me` via `TeamGate.tsx`.
+### Team Free Chat
+1. UI at `/team/chat` sends messages to `POST /api/team/ai/free`.
+2. Server calls Gemini and returns assistant text.
+3. UI holds per-tab state.
 
-### Free Chat Flow
-1. Team opens `/team/chat`.
-2. UI sends chat payload to `POST /api/team/ai/free`.
-3. Gemini returns Hebrew text.
-4. UI maintains local per-tab state (for Refresh resilience).
-
-### Guided Reflection Flow (DB-driven)
-1. Team opens `/team/reflection`.
-2. UI holds a `sessionId` (per tab) and calls `POST /api/team/reflection/start`.
-3. Each user answer goes to `POST /api/team/reflection/message` with `{ sessionId, text }`.
-4. Server loads the session, reads `currentIndex`, selects questions from `lib/reflection/questions.ts`, and returns the next assistant message.
-5. End:
-   - The flow reaches the last question, and/or
-   - Summary is generated and stored, and the session can be submitted via `POST /api/team/reflection/submit`.
+### Guided Reflection (DB-driven)
+1. UI at `/team/reflection` creates/holds a `sessionId`.
+2. UI calls `POST /api/team/reflection/start`.
+3. Each user answer goes to `POST /api/team/reflection/message`.
+4. Server loads `ReflectionChatSession`, reads `currentIndex`, selects questions from `lib/reflection/questions.ts`.
+5. Server stores structured answers and progresses `currentIndex`.
+6. Summary can be produced and stored, then finalized via `POST /api/team/reflection/submit`.
 
 ---
 
-## 8) Lecturer Client-Side Architecture
+## 8) Lecturer UI Architecture
 
 The lecturer interface is implemented using Next.js App Router and React components.
-Component groups:
-- GUIComponents – reusable UI elements (inputs, tables, charts, buttons)
-- UserComponents – lecturer authentication and profile-related components
-- TeamsComponents – team overview, team details, insights, alerts, reflections, chat history
-- AnnouncementsComponents – publishing and viewing announcements/tasks
-- AlertsComponents – alerts history and notifications
-- Header – navigation menu and logout
+Main component groups:
+- GUI components (inputs, tables, charts)
+- Authentication/profile
+- Teams overview & details (insights, alerts, reflections, chat history)
+- Announcements
+- Analytics
 
 Architecture diagram:
 <img width="1911" height="650" alt="image" src="https://github.com/user-attachments/assets/05ad4d96-5cae-40a4-89e0-69d665dda3d1" />
@@ -316,17 +259,19 @@ Architecture diagram:
 
 ## 9) Environment Setup & Dependencies
 
-### Environment Variables
-Create/update `.env`:
+### Environment variables
+Create/update `.env` at the project root:
 - `TEAM_SESSION_SECRET=...`
 - `GEMINI_API_KEY=...`
 
-MongoDB:
-- Connection is implemented in `lib/db.js`.
+### Required dependencies
+- Next.js (App Router)
+- Mongoose (MongoDB)
+- Gemini SDK: `@google/genai`
+- Chart libraries (used by lecturer UI): `chart.js`, `react-chartjs-2`, `recharts`
 
 ### Install
 ```bash
 npm install
 npm install @google/genai
-npm install chart.js react-chartjs-2
-npm install recharts
+npm install chart.js react-chartjs-2 recharts
