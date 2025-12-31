@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Team from "@/models/Team";
+import { signTeamSession } from "@/lib/teamSession";
+
+const COOKIE_NAME = "team_session";
 
 export async function POST(request) {
   try {
@@ -16,10 +19,18 @@ export async function POST(request) {
 
     const team = await Team.findOne({ teamId, accessCode }).lean();
     if (!team) {
-      return NextResponse.json({ error: "Invalid teamId/accessCode" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid teamId/accessCode" },
+        { status: 401 }
+      );
     }
 
-    return NextResponse.json(
+    const token = signTeamSession(
+      { teamId: team.teamId },
+      { maxAgeSeconds: 60 * 60 * 24 * 7 }
+    );
+
+    const res = NextResponse.json(
       {
         ok: true,
         team: {
@@ -32,6 +43,18 @@ export async function POST(request) {
       },
       { status: 200 }
     );
+
+    res.cookies.set({
+      name: COOKIE_NAME,
+      value: token,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return res;
   } catch (err) {
     return NextResponse.json(
       { error: "Server error", details: String(err?.message || err) },
