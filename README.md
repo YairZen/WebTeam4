@@ -10,6 +10,12 @@
 7. Backend (API & Infrastructure)
 8. Data Flow (Backend to Frontend)
 9. Lecturer Client-Side Architecture
+3. Database Entities  
+4. Database Entity Relationships  
+5. Constraints  
+6. Backend (API & Infrastructure)  
+7. Data Flow (Backend to Frontend)  
+8. Lecturer Client-Side Architecture
 
 ---
 
@@ -104,6 +110,18 @@ The system supports two Gemini-based experiences for teams:
 ---
 
 ## 4. Database Entities
+Open the project root in VS Code (`teaminsight`) and run in the terminal:
+
+1. `npm install`
+2. `npm run dev`
+
+
+First page: http://localhost:3000  
+Choose **Lecturer** or **Team**.
+
+---
+
+## 3. Database Entities
 
 ### Lecturer
 **Description:** Represents the system administrator (lecturer) for authentication and receiving alerts.
@@ -197,6 +215,7 @@ The system supports two Gemini-based experiences for teams:
 ---
 
 ## 5. Database Entity Relationships
+## 4. Database Entity Relationships
 
 - **Team → Reflection** (One-to-Many)  
   A single team can have multiple reflections.
@@ -222,6 +241,7 @@ The system supports two Gemini-based experiences for teams:
 ---
 
 ## 6. Constraints
+## 5. Constraints
 
 - `Team.teamId` must be unique.
 - `memberId` must be unique within a specific team.
@@ -240,6 +260,7 @@ Messages constraints:
 ---
 
 ## 7. Backend (API & Infrastructure)
+## 6. Backend (API & Infrastructure)
 
 ### Backend Overview
 The backend is implemented using the Next.js App Router.  
@@ -313,6 +334,7 @@ Each API route:
 ---
 
 ## 8. Data Flow (Backend to Frontend)
+## 7. Data Flow (Backend to Frontend) 
 
 ### How the system works
 1. The frontend sends an HTTP request to an API endpoint.
@@ -321,12 +343,16 @@ Each API route:
 4. Mongoose reads/writes data in MongoDB.
 5. A JSON response is returned to the frontend.
 
+**In general:**  
+Frontend → Backend → Database → Backend → Frontend
+
 **In this project:**  
 Frontend → Next.js API Route → Mongoose → MongoDB → API Response → Frontend
 
 ---
 
 ## 9. Lecturer Client-Side Architecture
+## 8. Lecturer Client-Side Architecture
 
 The lecturer interface is implemented using Next.js App Router and React components.  
 The client-side architecture follows a hierarchical component-based design.
