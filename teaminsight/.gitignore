@@ -1,41 +1,69 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# =====================================================
+# ROOT-LEVEL NODE / NPM (prevent root pollution)
+# =====================================================
 /node_modules
+/package.json
+/package-lock.json
+/pnpm-lock.yaml
+/yarn.lock
+/.npmrc
+/.yarnrc*
 /.pnp
 .pnp.*
+
+# =====================================================
+# PROJECT-LEVEL NODE (allow inside teaminsight)
+# =====================================================
+!teaminsight/package.json
+!teaminsight/package-lock.json
+!teaminsight/pnpm-lock.yaml
+!teaminsight/yarn.lock
+
+# =====================================================
+# YARN (if ever used)
+# =====================================================
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# =====================================================
+# NEXT.JS
+# =====================================================
+.next/
+out/
+build/
+.vercel
 
-# next.js
-/.next/
-/out/
+# =====================================================
+# TESTING
+# =====================================================
+coverage/
 
-# production
-/build
+# =====================================================
+# ENV FILES (local only)
+# =====================================================
+.env
+.env.*
+!.env.example
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# =====================================================
+# LOGS / DEBUG
+# =====================================================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# =====================================================
+# OS / EDITOR
+# =====================================================
+.DS_Store
+Thumbs.db
 
-# vercel
-.vercel
-
-# typescript
+# =====================================================
+# TYPESCRIPT
+# =====================================================
 *.tsbuildinfo
 next-env.d.ts
