@@ -16,7 +16,7 @@ import Link from "next/link";
 export default function LecturerDashboardPage() {
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center px-6 py-12">
-      
+
       {/* Page Title */}
       <h1 className="text-3xl font-bold mb-8">
         Lecturer Dashboard
@@ -24,12 +24,19 @@ export default function LecturerDashboardPage() {
 
       {/* Navigation Cards */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
-        
+
         {/* Teams Overview */}
         <DashboardCard
           title="Teams Overview"
           description="View all teams status, progress and analytics"
           href="/lecturer/teams"
+        />
+
+        {/* Teams Management */}
+        <DashboardCard
+          title="Teams Management"
+          description="Create and manage teams (members, access codes, emails)"
+          href="/lecturer/teams/manage"
         />
 
         {/* Analytics */}
