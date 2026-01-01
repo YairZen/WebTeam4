@@ -1,0 +1,243 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="Swimlane - DoubleBot Conversation Flow" id="swimlane-diagram">
+    <mxGraphModel dx="2278" dy="1249" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lane-student" value="Student (Frontend)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontStyle=1;fontSize=14;startSize=40;" parent="1" vertex="1">
+          <mxGeometry x="40" y="80" width="1700" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-backend" value="Backend (Node.js)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1976D2;strokeWidth=2;fontStyle=1;fontSize=14;startSize=40;" parent="1" vertex="1">
+          <mxGeometry x="40" y="280" width="1700" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bot1" value="Bot 1 (Conversation)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontStyle=1;fontSize=14;startSize=40;" parent="1" vertex="1">
+          <mxGeometry x="40" y="480" width="1700" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bot2" value="&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; Bot 2 (Analysis)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontStyle=1;fontSize=14;startSize=40;" parent="1" vertex="1">
+          <mxGeometry x="40" y="680" width="1700" height="500" as="geometry" />
+        </mxCell>
+        <mxCell id="-IaFJlwLna9WSlO-z_TW-1" value="ניתוח הודעות קודמות ומתן הוראות לשיחה" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="330" y="10" width="90" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="שליחת הודעה&#xa;לבוט" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="550" y="-550" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" value="עיבוד הודעה&#xa;POST /api/&#xa;doublebot/message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1976D2;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="550" y="-355" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="s4" target="b2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bot1-2" value="ניתוח הודעה&#xa;ויצירת תגובה&#xa;רלוונטית" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="550" y="-155" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="b2" target="bot1-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ext2" value="Cerebras AI&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="550" y="250" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="bot1-2" target="ext2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="db2" value="שמירת הודעה&#xa;ב-conversation&#xa;History[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="550" y="440" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;dashed=1;" parent="lane-bot2" source="ext2" target="db2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="צפייה בתגובת&#xa;הבוט" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="680" y="-550" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="ext2" target="s5" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="670" y="280" />
+              <mxPoint x="670" y="-525" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="loop-arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d6b656;strokeWidth=2;endArrow=classic;dashed=1;" parent="lane-bot2" source="s5" target="s4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="-570" />
+              <mxPoint x="600" y="-570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s6" value="סיום שיחה&#xa;(לחיצה על כפתור)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="810" y="-550" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="s5" target="s6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" value="הפעלת ניתוח&#xa;POST /api/&#xa;doublebot/analyze" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1976D2;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="810" y="-355" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="s6" target="b3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bot2-1" value="ניתוח סנטימנט&#xa;של כל ההודעות" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="940" y="50" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="b3" target="bot2-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ext3" value="HuggingFace&#xa;heBERT&#xa;Sentiment Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="940" y="250" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="bot2-1" target="ext3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bot2-2" value="יצירת סיכום&#xa;ותובנות" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1070" y="50" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="ext3" target="bot2-2" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="280" />
+              <mxPoint x="1040" y="75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ext4" value="Cerebras AI&#xa;Summary&#xa;Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1070" y="250" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="bot2-2" target="ext4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bot2-3" value="יצירת משימות&#xa;והמלצות" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1200" y="50" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="ext4" target="bot2-3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1170" y="280" />
+              <mxPoint x="1170" y="75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ext5" value="Cerebras AI&#xa;Task&#xa;Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1200" y="250" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="bot2-3" target="ext5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="db3" value="שמירת ניתוח,&#xa;ציונים, משימות" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1200" y="440" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;dashed=1;" parent="lane-bot2" source="ext5" target="db3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" value="הכנת תוצאות&#xa;לתצוגה" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1976D2;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1330" y="-350" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="bot2-3" target="b4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1380" y="75" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s7" value="צפייה בניתוח:&#xa;• סנטימנט&#xa;• סיכום&#xa;• ציונים" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1330" y="-560" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="b4" target="s7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8" value="צפייה במשימות&#xa;והמלצות" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1460" y="-550" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="s7" target="s8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" value="שליחת התראה&#xa;למרצה" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1976D2;strokeWidth=2;fontSize=11;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1460" y="-350" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="b4" target="b5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="db4" value="שמירת&#xa;Notification&#xa;למרצה" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=10;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1460" y="440" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;dashed=1;" parent="lane-bot2" source="b5" target="db4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="end" value="סיום" style="ellipse;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#2E7D32;strokeWidth=2;fontSize=12;fontColor=#FFFFFF;fontStyle=1;" parent="lane-bot2" vertex="1">
+          <mxGeometry x="1600" y="-540" width="60" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="a27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="lane-bot2" source="s8" target="end" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-external" value="External Services" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;fontStyle=1;fontSize=14;startSize=40;" parent="1" vertex="1">
+          <mxGeometry x="40" y="880" width="1700" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ext1" value="Cerebras AI&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=2;fontSize=10;" parent="lane-external" vertex="1">
+          <mxGeometry x="400" y="50" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-db" value="Database (MongoDB)" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontStyle=1;fontSize=14;startSize=40;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1080" width="1700" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="db1" value="שמירת&#xa;GroupReflection&#xa;חדש" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=10;" parent="lane-db" vertex="1">
+          <mxGeometry x="160" y="40" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-IaFJlwLna9WSlO-z_TW-2" value="יבוא הודעות קודמות" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=10;" parent="lane-db" vertex="1">
+          <mxGeometry x="320" y="40" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="התחל רפלקציה&#xa;קבוצתית" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2E7D32;strokeWidth=2;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="100" y="130" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="b1" value="יצירת Session&#xa;חדש" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1976D2;strokeWidth=2;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="220" y="330" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="s1" target="b1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="270.0000000000002" y="185" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;dashed=1;" parent="1" source="b1" target="db1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bot1-1" value="יצירת הודעת&#xa;פתיחה" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="350" y="530" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;" parent="1" source="b1" target="bot1-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="bot1-1" target="-IaFJlwLna9WSlO-z_TW-2" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="330" y="555" />
+              <mxPoint x="330" y="1150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ext1" target="s4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="960" />
+              <mxPoint x="560" y="155" />
+            </Array>
+            <mxPoint x="450" y="155" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-IaFJlwLna9WSlO-z_TW-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="-IaFJlwLna9WSlO-z_TW-2" target="-IaFJlwLna9WSlO-z_TW-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="850" as="sourcePoint" />
+            <mxPoint x="460" y="1025" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="410" y="830" />
+              <mxPoint x="410" y="830" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="-IaFJlwLna9WSlO-z_TW-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1976D2;strokeWidth=2;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.414;entryY=0.033;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="-IaFJlwLna9WSlO-z_TW-1" target="ext1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="800" as="sourcePoint" />
+            <mxPoint x="520" y="975" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
