@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/db";
 import Alert from "@/models/Alert";
 import Team from "@/models/Team";
 import Lecturer from "@/models/Lecturer";
+import { sendMail } from "@/lib/mailer";
+
 
 export async function GET(request) {
   try {
@@ -47,6 +49,25 @@ export async function POST(request) {
       emailTo,
       emailStatus: "pending",
     });
+
+
+    if (severity === "red" && emailTo) {
+      try {
+        await sendMail(
+          emailTo,
+          `Critical alert for team ${teamId}`,
+          message
+        );
+        await Alert.findByIdAndUpdate(created._id, {
+          emailStatus: "sent",
+        });
+      } catch {
+        await Alert.findByIdAndUpdate(created._id, {
+          emailStatus: "failed",
+        });
+      }
+    }
+
 
     return NextResponse.json({ ok: true, alertId: created._id }, { status: 201 });
   } catch (err) {
