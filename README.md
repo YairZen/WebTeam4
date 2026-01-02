@@ -3,19 +3,13 @@
 ## Contents
 1. Project Structure
 2. Quick Start: Environment & Dependencies
-3. AI (Gemini): Free Chat & Guided Reflection
-4. Database Entities
-5. Database Entity Relationships
-6. Constraints
-7. Backend (API & Infrastructure)
-8. Data Flow (Backend to Frontend)
+3. Database Entities
+4. Database Entity Relationships
+5. Constraints
+6. Backend (API & Infrastructure)
+7. Data Flow (Backend to Frontend)
+8. AI (Gemini): Free Chat & Guided Reflection
 9. Lecturer Client-Side Architecture
-3. Database Entities  
-4. Database Entity Relationships  
-5. Constraints  
-6. Backend (API & Infrastructure)  
-7. Data Flow (Backend to Frontend)  
-8. Lecturer Client-Side Architecture
 
 ---
 
@@ -25,23 +19,11 @@
 - `app/`
 - `app/lecturer/`
 - `app/team/`
-  - Public:
-    - `app/team/(public)/join/page.tsx` (Team login)
-  - Protected:
-    - `app/team/(protected)/layout.tsx`
-    - `app/team/(protected)/page.tsx` (Team Home)
-    - `app/team/(protected)/chat/page.tsx` + `app/team/(protected)/chat/Chat.tsx` (Team Free Chat)
-    - `app/team/(protected)/reflection/page.tsx` + `app/team/(protected)/reflection/ReflectionChat.tsx` (Guided Reflection)
-    - `app/team/(protected)/messages/page.tsx` (Team Messages / Threads UI)
-    - `app/team/(protected)/info/page.tsx` (Team Info)
-  - Shared:
-    - `app/team/_components/TeamGate.tsx` (route protection)
-    - `app/team/_components/TeamTabs.tsx` (navigation)
 
 ### Backend (API Routes – Next.js App Router)
 - `app/api/`
 
-### Backend (Infrastructure & Data Access)
+### Backend External API (Infrastructure & Data Access)
 - `lib/`
   - `lib/db.js` (MongoDB connection via Mongoose)
   - `lib/teamSession.js` (team session cookie signing/verification)
@@ -58,65 +40,12 @@
 
 ## 2. Quick Start: Environment & Dependencies
 
-### Environment variables
-Create/update a `.env` file in the project root:
-- `TEAM_SESSION_SECRET=...`
-- `GEMINI_API_KEY=...`
-
-### Install & run
 Open the project root in VS Code (`teaminsight`) and run:
-
-1. `npm install`
-2. `npm install @google/genai`
-3. `npm install chart.js react-chartjs-2 recharts`
-4. `npm run dev`
-
-First page: `http://localhost:3000`  
-Choose **Lecturer** or **Team**.
-
----
-
-## 3. AI (Gemini): Free Chat & Guided Reflection
-
-The system supports two Gemini-based experiences for teams:
-
-### A) Team Free Chat
-**Goal:** Free-form team conversation (practical advice, daily collaboration issues, process improvements).  
-**UI:** `/team/chat`  
-**API:** `POST /api/team/ai/free`  
-**Behavior:** The AI may answer directly; if essential context is missing, it asks one clarifying question.  
-**State:** Per-tab UI state (refresh resilience is handled by the client). Closing the tab/window may end the chat.
-
-### B) Guided Reflection (DB-driven)
-**Goal:** A structured reflection flow with fixed question ordering.  
-**UI:** `/team/reflection`  
-**API:**
-- `POST /api/team/reflection/start`
-- `POST /api/team/reflection/message`
-- `POST /api/team/reflection/submit`
-
-**Flow control:** The server/database controls progression using:
-- `currentIndex` stored in `ReflectionChatSession`
-- `REFLECTION_QUESTIONS` from `lib/reflection/questions.ts`
-
-**Session per tab:** Each tab uses a unique `sessionId` (parallel reflections are supported).  
-**Persistence:** Stored in MongoDB (answers, status, summary) for later insights.
-
-### Prompts and Gemini runtime
-- `lib/ai/prompts.ts` – prompts are written in English; assistant output is Hebrew.
-- `lib/ai/gemini.ts` – Gemini wrapper and helper functions used by API routes.
-- `lib/reflection/questions.ts` – reflection questions list/order used by the server.
-
----
-
-## 4. Database Entities
-Open the project root in VS Code (`teaminsight`) and run in the terminal:
 
 1. `npm install`
 2. `npm run dev`
 
-
-First page: http://localhost:3000  
+First page: `http://localhost:3000`  
 Choose **Lecturer** or **Team**.
 
 ---
@@ -139,15 +68,6 @@ Choose **Lecturer** or **Team**.
 - `contactEmail`
 - `members: [{ memberId, displayName }]`
 - `status`
-- `createdAt`
-
-### Reflection
-**Description:** Represents a personal feedback submission by a team member as part of a reflection session. Stored for history and analysis.
-- `_id`
-- `teamId`
-- `memberId`
-- `answers (5)`
-- `freeText`
 - `createdAt`
 
 ### ReflectionChatSession
@@ -181,14 +101,6 @@ Choose **Lecturer** or **Team**.
 - `targetTeams`
 - `createdAt`
 
-### ChatSession
-**Description:** Represents a stored conversation history per team (existing model).
-- `_id`
-- `teamId`
-- `messages: [{ role, text, createdAt }]`
-- `createdAt`
-- `updatedAt`
-
 ### MessageThread
 **Description:** Represents a thread between a team and the lecturer (mail/board style).
 - `_id`
@@ -214,11 +126,7 @@ Choose **Lecturer** or **Team**.
 
 ---
 
-## 5. Database Entity Relationships
 ## 4. Database Entity Relationships
-
-- **Team → Reflection** (One-to-Many)  
-  A single team can have multiple reflections.
 
 - **Team → ReflectionChatSession** (One-to-Many)  
   A single team can have multiple guided reflection sessions (including parallel tabs via `sessionId`).
@@ -229,9 +137,6 @@ Choose **Lecturer** or **Team**.
 - **Announcement → Team** (Broadcast)  
   An announcement can target all teams or a selected list.
 
-- **Team → ChatSession** (One-to-One)  
-  Each team can have a stored chat session history (existing model).
-
 - **Team → MessageThread** (One-to-Many)  
   A team can have multiple message threads.
 
@@ -240,7 +145,6 @@ Choose **Lecturer** or **Team**.
 
 ---
 
-## 6. Constraints
 ## 5. Constraints
 
 - `Team.teamId` must be unique.
@@ -259,7 +163,6 @@ Messages constraints:
 
 ---
 
-## 7. Backend (API & Infrastructure)
 ## 6. Backend (API & Infrastructure)
 
 ### Backend Overview
@@ -333,7 +236,6 @@ Each API route:
 
 ---
 
-## 8. Data Flow (Backend to Frontend)
 ## 7. Data Flow (Backend to Frontend) 
 
 ### How the system works
@@ -351,8 +253,40 @@ Frontend → Next.js API Route → Mongoose → MongoDB → API Response → Fro
 
 ---
 
+## 8. AI (Gemini): Free Chat & Guided Reflection
+
+The system supports two Gemini-based experiences for teams:
+
+### A) Team Free Chat
+**Goal:** Free-form team conversation (practical advice, daily collaboration issues, process improvements).  
+**UI:** `/team/chat`  
+**API:** `POST /api/team/ai/free`  
+**Behavior:** The AI may answer directly; if essential context is missing, it asks one clarifying question.  
+**State:** Per-tab UI state (refresh resilience is handled by the client). Closing the tab/window may end the chat.
+
+### B) Guided Reflection (DB-driven)
+**Goal:** A structured reflection flow with fixed question ordering.  
+**UI:** `/team/reflection`  
+**API:**
+- `POST /api/team/reflection/start`
+- `POST /api/team/reflection/message`
+- `POST /api/team/reflection/submit`
+
+**Flow control:** The server/database controls progression using:
+- `currentIndex` stored in `ReflectionChatSession`
+- `REFLECTION_QUESTIONS` from `lib/reflection/questions.ts`
+
+**Session per tab:** Each tab uses a unique `sessionId` (parallel reflections are supported).  
+**Persistence:** Stored in MongoDB (answers, status, summary) for later insights.
+
+### Prompts and Gemini runtime
+- `lib/ai/prompts.ts` – prompts are written in English; assistant output is Hebrew.
+- `lib/ai/gemini.ts` – Gemini wrapper and helper functions used by API routes.
+- `lib/reflection/questions.ts` – reflection questions list/order used by the server.
+
+---
+
 ## 9. Lecturer Client-Side Architecture
-## 8. Lecturer Client-Side Architecture
 
 The lecturer interface is implemented using Next.js App Router and React components.  
 The client-side architecture follows a hierarchical component-based design.
