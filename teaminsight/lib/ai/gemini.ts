@@ -1,69 +1,49 @@
 import { GoogleGenAI } from "@google/genai";
 import {
-  TEAM_FEEDBACK_SYSTEM_PROMPT,
-  TEAM_FREE_CHAT_SYSTEM_PROMPT,
-  TEAM_REFLECTION_SYSTEM_PROMPT,
-  TEAM_REFLECTION_TURN_PROMPT,
-  TEAM_REFLECTION_SUMMARY_PROMPT,
-} from "./prompts";
+  REFLECTION_CONTROLLER_PROMPT,
+  REFLECTION_INTERVIEWER_PROMPT,
+  REFLECTION_FINAL_SUMMARY_PROMPT,
+} from "./reflectionPrompts";
+import { REFLECTION_TOPICS } from "@/lib/reflection/topics";
 
 const apiKey = process.env.GEMINI_API_KEY;
-
-if (!apiKey) {
-  throw new Error("Missing GEMINI_API_KEY");
-}
+if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
 
 const ai = new GoogleGenAI({ apiKey });
 
 export type ChatMsg = { role: "user" | "model"; text: string };
 
-async function runChat(systemPrompt: string, messages: ChatMsg[]) {
-  const contents = [
-    { role: "user" as const, parts: [{ text: systemPrompt }] },
-    ...messages.map((m) => ({
-      role: m.role,
-      parts: [{ text: m.text }],
-    })),
-  ];
-
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents,
-  });
-
-  return response.text ?? "";
-}
-
-export async function runTeamFeedbackChat(messages: ChatMsg[]) {
-  return runChat(TEAM_FEEDBACK_SYSTEM_PROMPT, messages);
-}
-
-export async function runTeamFreeChat(messages: ChatMsg[]) {
-  return runChat(TEAM_FREE_CHAT_SYSTEM_PROMPT, messages);
-}
-
-/**
- * NOTE:
- * This function corresponds to "model-driven" reflection (Method B).
- * For DB-driven reflection (Method A), use runReflectionTurn/runReflectionSummary below.
- */
-export async function runTeamReflectionChat(messages: ChatMsg[]) {
-  return runChat(TEAM_REFLECTION_SYSTEM_PROMPT, messages);
-}
-
-// =========================
-// Reflection (Method A): DB/server controls order
-// =========================
-
-export type ReflectionTurnInput = {
-  currentQuestion: string;
-  nextQuestion: string | null;
-  userAnswer: string;
+export type ReflectionAnswer = {
+  topicId: string;
+  prompt: string;
+  answer: string;
 };
 
-export type ReflectionTurnResult = {
-  assistantText: string;
-  advance: boolean;
+export type NextIntent = {
+  kind: "clarify_current" | "advance_topic" | "wrap_up";
+  topicId: string | null;
+  anchor: string;
+  styleNote: string;
+  questions: string[];
+};
+
+export type ControllerInput = {
+  messages: ChatMsg[];
+  answers: ReflectionAnswer[];
+  runningSummary: string;
+  clarifyCount: number;
+  turnCount: number;
+  maxTurns: number;
+  recentSummaries: string[];
+};
+
+export type ControllerResult = {
+  runningSummary: string;
+  answers: ReflectionAnswer[];
+  nextIntent: NextIntent;
+  readyToSubmit: boolean;
+  clarifyCount: number;
+  turnCount: number;
 };
 
 function stripCodeFences(s: string) {
@@ -74,49 +54,109 @@ function stripCodeFences(s: string) {
   return t;
 }
 
-function safeParseTurnResult(raw: string): ReflectionTurnResult {
+function safeParseController(raw: string, fallback: ControllerResult): ControllerResult {
   const cleaned = stripCodeFences(raw);
 
   try {
     const obj = JSON.parse(cleaned);
-    const assistantText =
-      typeof obj?.assistantText === "string" ? obj.assistantText.trim() : "";
-    const advance = obj?.advance === true;
+    if (!obj || typeof obj !== "object") return fallback;
 
-    if (!assistantText) {
-      return { assistantText: "קיבלתי. אפשר לפרט קצת יותר?", advance: false };
-    }
+    const ni = (obj as any).nextIntent;
+    if (!ni || typeof ni !== "object") return fallback;
 
-    return { assistantText, advance };
+    const questionsRaw = Array.isArray(ni.questions) ? ni.questions : [];
+    const questions = questionsRaw
+      .filter((q: any) => typeof q === "string")
+      .map((q: string) => q.trim())
+      .filter(Boolean)
+      .slice(0, 2);
+
+    if (questions.length === 0) return fallback;
+
+    const kind = ni.kind;
+    const validKind: NextIntent["kind"] =
+      kind === "clarify_current" || kind === "advance_topic" || kind === "wrap_up"
+        ? kind
+        : fallback.nextIntent.kind;
+
+    return {
+      runningSummary:
+        typeof (obj as any).runningSummary === "string"
+          ? (obj as any).runningSummary.trim()
+          : fallback.runningSummary,
+      answers: Array.isArray((obj as any).answers) ? (obj as any).answers : fallback.answers,
+      nextIntent: {
+        kind: validKind,
+        topicId: typeof ni.topicId === "string" ? ni.topicId : null,
+        anchor: typeof ni.anchor === "string" ? ni.anchor.trim() : fallback.nextIntent.anchor,
+        styleNote: typeof ni.styleNote === "string" ? ni.styleNote.trim() : "",
+        questions,
+      },
+      readyToSubmit: (obj as any).readyToSubmit === true,
+      clarifyCount: Number.isFinite((obj as any).clarifyCount) ? (obj as any).clarifyCount : fallback.clarifyCount,
+      turnCount: Number.isFinite((obj as any).turnCount) ? (obj as any).turnCount : fallback.turnCount,
+    };
   } catch {
-    // Fallback: keep the app running even if the model returns bad JSON
-    return { assistantText: "קיבלתי. אפשר לפרט קצת יותר?", advance: false };
+    return fallback;
   }
 }
 
-export async function runReflectionTurn(input: ReflectionTurnInput): Promise<ReflectionTurnResult> {
+export async function runReflectionController(input: ControllerInput): Promise<ControllerResult> {
+  const payload = JSON.stringify({ ...input, topics: REFLECTION_TOPICS });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      { role: "user" as const, parts: [{ text: REFLECTION_CONTROLLER_PROMPT }] },
+      { role: "user" as const, parts: [{ text: payload }] },
+    ],
+  });
+
+  const fallback: ControllerResult = {
+    runningSummary: input.runningSummary || "",
+    answers: input.answers || [],
+    nextIntent: {
+      kind: "advance_topic",
+      topicId: "achievements",
+      anchor: "יאללה נתחיל מהשבוע שלכם",
+      styleNote: "short open question",
+      questions: ["מה התוצר הכי משמעותי שהשלמתם השבוע?"],
+    },
+    readyToSubmit: false,
+    clarifyCount: input.clarifyCount || 0,
+    turnCount: input.turnCount || 0,
+  };
+
+  return safeParseController(response.text ?? "{}", fallback);
+}
+
+export async function runReflectionInterviewer(args: {
+  messages: ChatMsg[];
+  nextIntent: NextIntent;
+}): Promise<string> {
+  const payload = JSON.stringify(args);
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      { role: "user" as const, parts: [{ text: REFLECTION_INTERVIEWER_PROMPT }] },
+      { role: "user" as const, parts: [{ text: payload }] },
+    ],
+  });
+
+  return (response.text ?? "").trim() || "קיבלתי. אפשר לשתף עוד קצת?";
+}
+
+export async function runReflectionFinalSummary(input: {
+  answers: ReflectionAnswer[];
+  runningSummary: string;
+}): Promise<string> {
   const payload = JSON.stringify(input);
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: [
-      { role: "user" as const, parts: [{ text: TEAM_REFLECTION_TURN_PROMPT }] },
-      { role: "user" as const, parts: [{ text: payload }] },
-    ],
-  });
-
-  return safeParseTurnResult(response.text ?? "{}");
-}
-
-export async function runReflectionSummary(
-  answers: Array<{ prompt: string; answer: string }>
-): Promise<string> {
-  const payload = JSON.stringify(answers);
-
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      { role: "user" as const, parts: [{ text: TEAM_REFLECTION_SUMMARY_PROMPT }] },
+      { role: "user" as const, parts: [{ text: REFLECTION_FINAL_SUMMARY_PROMPT }] },
       { role: "user" as const, parts: [{ text: payload }] },
     ],
   });

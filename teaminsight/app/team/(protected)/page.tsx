@@ -169,18 +169,13 @@ export default function TeamHomePage() {
                 </p>
 
                 <div className="mt-5 flex flex-col gap-3">
-                  <Link
-                    href="/team/chat"
-                    className="rounded-2xl bg-black px-4 py-3 text-sm font-medium text-white hover:opacity-90 transition"
-                  >
-                    Open Chat
-                  </Link>
+
 
                   <Link
                     href="/team/reflection"
                     className="rounded-2xl border bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
                   >
-                    Fill Reflection
+                    Weekly Reflection
                   </Link>
 
                   <Link
@@ -193,9 +188,7 @@ export default function TeamHomePage() {
 
                 </div>
 
-                <div className="mt-6 rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
-                  Tip: If Chat is not implemented yet, use Mail/Board for lecturer communication.
-                </div>
+
               </aside>
             </div>
           </>

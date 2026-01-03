@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
-import MessageThread from "@/models/MessageThread";
-import MessageMessage from "@/models/MessageMessage";
+import ConversationThread from "@/models/ConversationThread";
+import ConversationMessage from "@/models/ConversationMessage";
 
 const COOKIE_NAME = "team_session";
 
@@ -24,7 +25,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const threads = await MessageThread.find({ teamId })
+    const threads = await ConversationThread.find({ teamId })
       .sort({ updatedAt: -1 })
       .lean();
 
@@ -49,6 +50,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  let session;
+
   try {
     await connectDB();
 
@@ -65,29 +68,49 @@ export async function POST(request) {
     const text = String(body?.text || "").trim();
 
     if (!subject || !text) {
-      return NextResponse.json({ error: "subject and text are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "subject and text are required" },
+        { status: 400 }
+      );
     }
 
     const now = new Date();
+    session = await mongoose.startSession();
 
-    const thread = await MessageThread.create({
-      teamId,
-      subject,
-      lastMessageAt: now,
-      lastMessageText: text,
-      lastMessageRole: "team",
-      unreadForLecturer: 1,
-    });
+    let threadId = null;
 
-    await MessageMessage.create({
-      threadId: thread._id,
-      teamId,
-      role: "team",
-      text,
+    await session.withTransaction(async () => {
+      const createdThreads = await ConversationThread.create(
+        [
+          {
+            teamId,
+            subject,
+            lastMessageAt: now,
+            lastMessageText: text,
+            lastMessageRole: "team",
+            unreadForLecturer: 1,
+          },
+        ],
+        { session }
+      );
+
+      const thread = createdThreads[0];
+      threadId = thread._id;
+
+      await ConversationMessage.create(
+        [
+          {
+            threadId,
+            role: "team",
+            text,
+          },
+        ],
+        { session }
+      );
     });
 
     return NextResponse.json(
-      { ok: true, threadId: String(thread._id) },
+      { ok: true, threadId: String(threadId) },
       { status: 201 }
     );
   } catch (err) {
@@ -95,5 +118,7 @@ export async function POST(request) {
       { error: "Server error", details: String(err?.message || err) },
       { status: 500 }
     );
+  } finally {
+    if (session) session.endSession();
   }
 }
