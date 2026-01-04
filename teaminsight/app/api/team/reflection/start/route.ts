@@ -6,7 +6,6 @@ import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
 
 import ReflectionChatSession from "@/models/ReflectionChatSession";
-import ReflectionSubmission from "@/models/ReflectionSubmission";
 
 import { runReflectionController, runReflectionInterviewer } from "@/lib/ai/gemini";
 
@@ -25,7 +24,13 @@ export async function POST() {
 
     const payload = token ? verifyTeamSession(token) : null;
     const teamId = payload?.teamId;
-    if (!teamId) return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
+    if (!teamId) {
+      return jsonError(
+        401,
+        "Unauthorized",
+        "Missing/invalid team_session cookie or payload.teamId"
+      );
+    }
 
     let session = await ReflectionChatSession.findOne({
       teamId,
@@ -57,16 +62,21 @@ export async function POST() {
       });
     }
 
-    const recent = await ReflectionSubmission.find({
+    // Pull recent submitted summaries from ReflectionChatSession (instead of ReflectionSubmission)
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+    const recentSubmitted = await ReflectionChatSession.find({
       teamId,
-      submittedAt: { $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) },
+      status: "submitted",
+      updatedAt: { $gte: fourteenDaysAgo },
     })
-      .sort({ submittedAt: -1 })
+      .sort({ updatedAt: -1 })
       .limit(3)
+      .select({ aiSummary: 1 })
       .lean();
 
-    const recentSummaries = recent
-      .map((r: any) => r?.summary)
+    const recentSummaries = recentSubmitted
+      .map((r: any) => r?.aiSummary)
       .filter((s: any) => typeof s === "string" && s.trim().length > 0);
 
     const controller = await runReflectionController({
@@ -89,6 +99,7 @@ export async function POST() {
     session.answers = controller.answers;
     session.clarifyCount = controller.clarifyCount;
     session.currentIndex = controller.turnCount;
+
     await session.save();
 
     return NextResponse.json({
