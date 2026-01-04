@@ -15,15 +15,13 @@ export type ReflectionAnswerDoc = {
   updatedAt?: Date;
 };
 
-export type ReflectionChatSessionDoc = {
+export type ReflectionSubmissionDoc = {
   teamId: string;
   sessionId: string;
-  status: "in_progress" | "ready_to_submit" | "submitted";
-  currentIndex: number;
-  clarifyCount: number;
+  summary: string;
   messages: ChatMsgDoc[];
   answers: ReflectionAnswerDoc[];
-  aiSummary: string;
+  submittedAt: Date;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -45,32 +43,25 @@ const AnswerSchema = new Schema<ReflectionAnswerDoc>(
   { timestamps: true, _id: false }
 );
 
-const ReflectionChatSessionSchema = new Schema<ReflectionChatSessionDoc>(
+const ReflectionSubmissionSchema = new Schema<ReflectionSubmissionDoc>(
   {
     teamId: { type: String, required: true, index: true },
     sessionId: { type: String, required: true, index: true },
 
-    status: {
-      type: String,
-      enum: ["in_progress", "ready_to_submit", "submitted"],
-      default: "in_progress",
-    },
-
-    currentIndex: { type: Number, default: 0 },
-    clarifyCount: { type: Number, default: 0 },
+    summary: { type: String, required: true },
 
     messages: { type: [MessageSchema], default: [] },
     answers: { type: [AnswerSchema], default: [] },
 
-    aiSummary: { type: String, default: "" },
+    submittedAt: { type: Date, default: Date.now, index: true },
   },
   { timestamps: true }
 );
 
-ReflectionChatSessionSchema.index({ teamId: 1, sessionId: 1 }, { unique: true });
+ReflectionSubmissionSchema.index({ teamId: 1, submittedAt: -1 });
 
 const ModelRef =
-  (mongoose.models.ReflectionChatSession as Model<ReflectionChatSessionDoc>) ||
-  mongoose.model<ReflectionChatSessionDoc>("ReflectionChatSession", ReflectionChatSessionSchema);
+  (mongoose.models.ReflectionSubmission as Model<ReflectionSubmissionDoc>) ||
+  mongoose.model<ReflectionSubmissionDoc>("ReflectionSubmission", ReflectionSubmissionSchema);
 
 export default ModelRef;

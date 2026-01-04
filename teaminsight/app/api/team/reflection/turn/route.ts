@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
 
 import ReflectionChatSession from "@/models/ReflectionChatSession";
+import ReflectionSubmission from "@/models/ReflectionSubmission";
 
 import { runReflectionController, runReflectionInterviewer } from "@/lib/ai/gemini";
 
@@ -25,13 +26,7 @@ export async function POST(req: Request) {
 
     const payload = token ? verifyTeamSession(token) : null;
     const teamId = payload?.teamId;
-    if (!teamId) {
-      return jsonError(
-        401,
-        "Unauthorized",
-        "Missing/invalid team_session cookie or payload.teamId"
-      );
-    }
+    if (!teamId) return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
 
     const body = (await req.json().catch(() => null)) as TurnBody | null;
     const userText = (body?.text || "").trim();
@@ -42,28 +37,21 @@ export async function POST(req: Request) {
       status: "in_progress",
     });
 
-    if (!session) {
-      return jsonError(409, "No active reflection session. Call /start first.");
-    }
+    if (!session) return jsonError(409, "No active reflection session. Call /start first.");
 
     session.messages.push({ role: "user", text: userText });
     session.currentIndex = (session.currentIndex || 0) + 1;
 
-    // Recent submitted summaries (instead of ReflectionSubmission)
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-
-    const recentSubmitted = await ReflectionChatSession.find({
+    const recent = await ReflectionSubmission.find({
       teamId,
-      status: "submitted",
-      updatedAt: { $gte: fourteenDaysAgo },
+      submittedAt: { $gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) },
     })
-      .sort({ updatedAt: -1 })
+      .sort({ submittedAt: -1 })
       .limit(3)
-      .select({ aiSummary: 1 })
       .lean();
 
-    const recentSummaries = recentSubmitted
-      .map((r: any) => r?.aiSummary)
+    const recentSummaries = recent
+      .map((r: any) => r?.summary)
       .filter((s: any) => typeof s === "string" && s.trim().length > 0);
 
     const controller = await runReflectionController({

@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
 
 import ReflectionChatSession from "@/models/ReflectionChatSession";
+import ReflectionSubmission from "@/models/ReflectionSubmission";
 
 export const runtime = "nodejs";
 
@@ -21,30 +22,27 @@ export async function POST() {
 
     const payload = token ? verifyTeamSession(token) : null;
     const teamId = payload?.teamId;
-    if (!teamId) {
-      return jsonError(
-        401,
-        "Unauthorized",
-        "Missing/invalid team_session cookie or payload.teamId"
-      );
-    }
+    if (!teamId) return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
 
-    const session = await ReflectionChatSession.findOne({
-      teamId,
-      status: "ready_to_submit",
-    });
-
+    const session = await ReflectionChatSession.findOne({ teamId, status: "ready_to_submit" });
     if (!session) return jsonError(409, "Nothing to confirm");
 
     const summary = (session.aiSummary || "").trim();
     if (!summary) return jsonError(400, "Missing summary. Call /finish first.");
 
+    const submission = await ReflectionSubmission.create({
+      teamId,
+      sessionId: session.sessionId,
+      summary,
+      messages: session.messages,
+      answers: session.answers,
+      submittedAt: new Date(),
+    });
+
     session.status = "submitted";
-    session.submittedAt = new Date(); // <-- added
     await session.save();
 
-    // Keep the response shape to avoid frontend changes:
-    return NextResponse.json({ ok: true, submissionId: String(session._id) });
+    return NextResponse.json({ ok: true, submissionId: String(submission._id) });
   } catch (err: any) {
     console.error("reflection/confirm error:", err);
     return jsonError(500, "Internal Server Error", err?.message || "Unknown");
