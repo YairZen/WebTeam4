@@ -41,6 +41,132 @@ export default function TeamsManagePage() {
       .finally(() => setLoading(false));
   }
 
+  async function addStudentToTeam(teamIdToUpdate: string) {
+    setError(null);
+    setOkMsg(null);
+    setSaving(true);
+
+    try {
+      // 1) ask for details
+      const memberId = prompt("Enter Member ID:");
+      if (!memberId?.trim()) return;
+
+      const displayName = prompt("Enter Display Name:");
+      if (!displayName?.trim()) return;
+
+      // 2) get current team members (so we don't overwrite)
+      const resTeam = await fetch(`/api/teams/${encodeURIComponent(teamIdToUpdate)}`);
+      const teamData = await resTeam.json();
+
+      if (!teamData?.ok) {
+        setError(teamData?.error || "Failed to load team.");
+        return;
+      }
+
+      const currentMembers: Member[] = teamData.team.members ?? [];
+
+      // 3) validate uniqueness
+      if (currentMembers.some((m) => m.memberId === memberId.trim())) {
+        setError("Member ID must be unique within the team.");
+        return;
+      }
+
+      const updatedMembers = [
+        ...currentMembers,
+        { memberId: memberId.trim(), displayName: displayName.trim() },
+      ];
+
+      // 4) update team (your API uses PUT and expects full members array)
+      const resPut = await fetch(`/api/teams/${encodeURIComponent(teamIdToUpdate)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ members: updatedMembers }),
+      });
+
+      const putData = await resPut.json();
+      if (!putData?.ok) {
+        setError(putData?.error || "Failed to add student.");
+        return;
+      }
+
+      setOkMsg("Student added successfully.");
+      loadTeams();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeStudentFromTeam(teamIdToUpdate: string) {
+    setError(null);
+    setOkMsg(null);
+    setSaving(true);
+
+    try {
+      const memberId = prompt("Enter Member ID to remove:");
+      if (!memberId?.trim()) return;
+
+      const resTeam = await fetch(`/api/teams/${encodeURIComponent(teamIdToUpdate)}`);
+      const teamData = await resTeam.json();
+
+      if (!teamData?.ok) {
+        setError(teamData?.error || "Failed to load team.");
+        return;
+      }
+
+      const currentMembers: Member[] = teamData.team.members ?? [];
+      const updatedMembers = currentMembers.filter((m) => m.memberId !== memberId.trim());
+
+      if (updatedMembers.length === currentMembers.length) {
+        setError("Member ID not found in this team.");
+        return;
+      }
+
+      const resPut = await fetch(`/api/teams/${encodeURIComponent(teamIdToUpdate)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ members: updatedMembers }),
+      });
+
+      const putData = await resPut.json();
+      if (!putData?.ok) {
+        setError(putData?.error || "Failed to remove student.");
+        return;
+      }
+
+      setOkMsg("Student removed successfully.");
+      loadTeams();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteTeam(teamIdToDelete: string) {
+    const ok = confirm(`Delete team ${teamIdToDelete}? This cannot be undone.`);
+    if (!ok) return;
+
+    setError(null);
+    setOkMsg(null);
+    setSaving(true);
+
+    try {
+      const res = await fetch(`/api/teams/${encodeURIComponent(teamIdToDelete)}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (!data?.ok) {
+        setError(data?.error || "Failed to delete team.");
+        return;
+      }
+
+      setOkMsg("Team deleted successfully.");
+      loadTeams();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+
   useEffect(() => {
     loadTeams();
   }, []);
@@ -143,9 +269,8 @@ export default function TeamsManagePage() {
 
           {(error || okMsg) && (
             <div
-              className={`mb-4 rounded-md px-4 py-3 text-sm ${
-                error ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
-              }`}
+              className={`mb-4 rounded-md px-4 py-3 text-sm ${error ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
+                }`}
             >
               {error ?? okMsg}
             </div>
@@ -289,7 +414,7 @@ export default function TeamsManagePage() {
                     <th className="text-left px-6 py-3 border-b text-sm font-semibold text-gray-700">Contact Email</th>
                     <th className="text-left px-6 py-3 border-b text-sm font-semibold text-gray-700">Members</th>
                     <th className="text-left px-6 py-3 border-b text-sm font-semibold text-gray-700">Status</th>
-                    <th className="text-right px-6 py-3 border-b text-sm font-semibold text-gray-700">Open</th>
+                    <th className="text-right px-6 py-3 border-b text-sm font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -307,10 +432,44 @@ export default function TeamsManagePage() {
                         <StatusBadge status={t.status} />
                       </td>
                       <td className="px-6 py-4 border-b text-right">
-                        <Link href={`/lecturer/teams/${t.teamId}`} className="text-sm text-blue-600 hover:underline">
-                          View →
-                        </Link>
+                        <div className="inline-flex items-center gap-3">
+                          <Link
+                            href={`/lecturer/teams/${t.teamId}`}
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            View →
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => addStudentToTeam(t.teamId)}
+                            disabled={saving}
+                            className="text-sm px-3 py-1 rounded-md border bg-white hover:bg-gray-50 disabled:opacity-60"
+                          >
+                            + Student
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => removeStudentFromTeam(t.teamId)}
+                            disabled={saving}
+                            className="text-sm px-3 py-1 rounded-md border bg-white hover:bg-gray-50 disabled:opacity-60"
+                          >
+                            − Student
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteTeam(t.teamId)}
+                            disabled={saving}
+                            className="text-sm px-3 py-1 rounded-md border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-60"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
+
+
                     </tr>
                   ))}
                   {teams.length === 0 && (
