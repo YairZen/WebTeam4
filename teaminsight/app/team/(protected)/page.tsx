@@ -179,6 +179,13 @@ export default function TeamHomePage() {
                   </Link>
 
                   <Link
+                    href="/team/messages"
+                    className="rounded-2xl border bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
+                  >
+                    Messages
+                  </Link>
+
+                  <Link
                     href="/team/announcements"
                     className="rounded-2xl border bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
                   >
