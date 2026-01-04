@@ -8,7 +8,9 @@ const tabs = [
   { href: "/team/reflection", label: "Reflection" },
   { href: "/team/messages", label: "Messages" },
   { href: "/team/info", label: "Team Info" },
-  { href: "/team/reflection", label: "Reflection" }
+  { href: "/team/reflection", label: "Reflection" },
+  { href: "/team/announcements", label: "Announcements" }
+
 ];
 
 export default function TeamTabs() {
