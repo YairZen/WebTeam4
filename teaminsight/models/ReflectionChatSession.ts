@@ -24,6 +24,10 @@ export type ReflectionChatSessionDoc = {
   messages: ChatMsgDoc[];
   answers: ReflectionAnswerDoc[];
   aiSummary: string;
+
+  // New: timestamp of when the reflection was submitted/confirmed
+  submittedAt?: Date | null;
+
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -63,14 +67,23 @@ const ReflectionChatSessionSchema = new Schema<ReflectionChatSessionDoc>(
     answers: { type: [AnswerSchema], default: [] },
 
     aiSummary: { type: String, default: "" },
+
+    // New field (replaces ReflectionSubmission.submittedAt)
+    submittedAt: { type: Date, default: null, index: true },
   },
   { timestamps: true }
 );
 
 ReflectionChatSessionSchema.index({ teamId: 1, sessionId: 1 }, { unique: true });
 
+// Helpful for "recent submissions by team" queries
+ReflectionChatSessionSchema.index({ teamId: 1, submittedAt: -1 });
+
 const ModelRef =
   (mongoose.models.ReflectionChatSession as Model<ReflectionChatSessionDoc>) ||
-  mongoose.model<ReflectionChatSessionDoc>("ReflectionChatSession", ReflectionChatSessionSchema);
+  mongoose.model<ReflectionChatSessionDoc>(
+    "ReflectionChatSession",
+    ReflectionChatSessionSchema
+  );
 
 export default ModelRef;
