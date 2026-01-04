@@ -24,8 +24,10 @@ export async function POST(req) {
     );
   }
 
-  // ✅ SIMPLE COMPARISON (Option A)
-  if (password !== lecturer.passwordHash) {
+  // Compare password using bcrypt
+  const isPasswordValid = await lecturer.comparePassword(password);
+
+  if (!isPasswordValid) {
     return NextResponse.json(
       { error: "Invalid credentials" },
       { status: 401 }
