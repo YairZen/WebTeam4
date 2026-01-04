@@ -18,6 +18,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LecturerLoginPage() {
   /*
@@ -122,6 +123,14 @@ export default function LecturerLoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/* Link to registration */}
+        <div className="text-center mt-4 text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link href="/lecturer/register" className="text-blue-600 hover:underline">
+            Create one here
+          </Link>
+        </div>
       </form>
     </div>
   );

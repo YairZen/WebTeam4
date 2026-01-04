@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 
 
 // connect to online mongo db
-const MONGO_URI = "mongodb+srv://yairzen:123456Aa@cluster0.8d8voyd.mongodb.net/teaminsight";
+const MONGO_URI = process.env.MONGODB_URI;
+
+if (!MONGO_URI) {
+  throw new Error("Missing MONGODB_URI environment variable");
+}
 
 
 
