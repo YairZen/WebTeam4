@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
 
-const MessageThreadSchema = new mongoose.Schema(
+const ConversationThreadSchema = new mongoose.Schema(
   {
     teamId: { type: String, required: true, index: true },
     subject: { type: String, required: true, trim: true },
 
-    // Denormalized fields for fast list rendering
     lastMessageAt: { type: Date, default: null, index: true },
     lastMessageText: { type: String, default: "" },
     lastMessageRole: { type: String, enum: ["team", "lecturer"], default: "team" },
@@ -18,7 +17,7 @@ const MessageThreadSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-MessageThreadSchema.index({ teamId: 1, updatedAt: -1 });
+ConversationThreadSchema.index({ teamId: 1, updatedAt: -1 });
 
-export default mongoose.models.MessageThread ||
-  mongoose.model("MessageThread", MessageThreadSchema);
+export default mongoose.models.ConversationThread ||
+  mongoose.model("ConversationThread", ConversationThreadSchema);

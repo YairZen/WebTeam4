@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
-import MessageThread from "@/models/MessageThread";
-import MessageMessage from "@/models/MessageMessage";
+import ConversationThread from "@/models/ConversationThread";
+import ConversationMessage from "@/models/ConversationMessage";
 
 const COOKIE_NAME = "team_session";
 
@@ -29,17 +30,23 @@ export async function GET(_request, { params }) {
       return NextResponse.json({ error: "Missing threadId" }, { status: 400 });
     }
 
-    const thread = await MessageThread.findOne({ _id: threadId, teamId }).lean();
+    if (!mongoose.Types.ObjectId.isValid(threadId)) {
+      return NextResponse.json({ error: "Invalid threadId" }, { status: 400 });
+    }
+
+    const thread = await ConversationThread.findOne({ _id: threadId, teamId }).lean();
     if (!thread) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const messages = await MessageMessage.find({ threadId, teamId })
+    const messages = await ConversationMessage.find({ threadId })
       .sort({ createdAt: 1 })
       .lean();
 
-    // Mark as read for team
-    await MessageThread.updateOne({ _id: threadId, teamId }, { $set: { unreadForTeam: 0 } });
+    await ConversationThread.updateOne(
+      { _id: threadId, teamId },
+      { $set: { unreadForTeam: 0 } }
+    );
 
     return NextResponse.json(
       {
@@ -69,6 +76,8 @@ export async function GET(_request, { params }) {
 }
 
 export async function POST(request, { params }) {
+  let session;
+
   try {
     await connectDB();
 
@@ -85,44 +94,71 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Missing threadId" }, { status: 400 });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(threadId)) {
+      return NextResponse.json({ error: "Invalid threadId" }, { status: 400 });
+    }
+
     const body = await request.json().catch(() => ({}));
     const text = String(body?.text || "").trim();
     if (!text) {
       return NextResponse.json({ error: "text is required" }, { status: 400 });
     }
 
-    const thread = await MessageThread.findOne({ _id: threadId, teamId }).lean();
-    if (!thread) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
     const now = new Date();
+    session = await mongoose.startSession();
 
-    await MessageMessage.create({
-      threadId,
-      teamId,
-      role: "team",
-      text,
-    });
-
-    await MessageThread.updateOne(
-      { _id: threadId, teamId },
-      {
-        $set: {
-          lastMessageAt: now,
-          lastMessageText: text,
-          lastMessageRole: "team",
-          updatedAt: now,
-        },
-        $inc: { unreadForLecturer: 1 },
+    await session.withTransaction(async () => {
+      const thread = await ConversationThread.findOne({ _id: threadId, teamId }).session(session);
+      if (!thread) {
+        throw new Error("NOT_FOUND");
       }
-    );
+
+      if (thread.status === "closed") {
+        throw new Error("CLOSED");
+      }
+
+      await ConversationMessage.create(
+        [
+          {
+            threadId,
+            role: "team",
+            text,
+          },
+        ],
+        { session }
+      );
+
+      await ConversationThread.updateOne(
+        { _id: threadId, teamId },
+        {
+          $set: {
+            lastMessageAt: now,
+            lastMessageText: text,
+            lastMessageRole: "team",
+            updatedAt: now,
+          },
+          $inc: { unreadForLecturer: 1 },
+        },
+        { session }
+      );
+    });
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
+    const msg = String(err?.message || err);
+
+    if (msg === "NOT_FOUND") {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (msg === "CLOSED") {
+      return NextResponse.json({ error: "Thread is closed" }, { status: 403 });
+    }
+
     return NextResponse.json(
-      { error: "Server error", details: String(err?.message || err) },
+      { error: "Server error", details: msg },
       { status: 500 }
     );
+  } finally {
+    if (session) session.endSession();
   }
 }

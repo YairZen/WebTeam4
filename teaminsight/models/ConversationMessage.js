@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const MessageMessageSchema = new Schema(
+const ConversationMessageSchema = new Schema(
   {
     threadId: {
       type: Schema.Types.ObjectId,
-      ref: "MessageThread",
+      ref: "ConversationThread",
       required: true,
       index: true,
     },
@@ -29,8 +29,7 @@ const MessageMessageSchema = new Schema(
   { versionKey: false }
 );
 
-// Optional but useful for fetching a thread timeline fast
-MessageMessageSchema.index({ threadId: 1, createdAt: 1 });
+ConversationMessageSchema.index({ threadId: 1, createdAt: 1 });
 
-export default mongoose.models.MessageMessage ||
-  mongoose.model("MessageMessage", MessageMessageSchema);
+export default mongoose.models.ConversationMessage ||
+  mongoose.model("ConversationMessage", ConversationMessageSchema);

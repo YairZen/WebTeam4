@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
 
 import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
@@ -12,11 +11,13 @@ import { runReflectionController, runReflectionInterviewer } from "@/lib/ai/gemi
 
 export const runtime = "nodejs";
 
+type TurnBody = { text: string };
+
 function jsonError(status: number, error: string, details?: string) {
   return NextResponse.json({ error, ...(details ? { details } : {}) }, { status });
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     await connectDB();
 
@@ -27,35 +28,19 @@ export async function POST() {
     const teamId = payload?.teamId;
     if (!teamId) return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
 
-    let session = await ReflectionChatSession.findOne({
+    const body = (await req.json().catch(() => null)) as TurnBody | null;
+    const userText = (body?.text || "").trim();
+    if (!userText) return jsonError(400, "Missing text");
+
+    const session = await ReflectionChatSession.findOne({
       teamId,
-      status: { $in: ["in_progress", "ready_to_submit"] },
+      status: "in_progress",
     });
 
-    if (!session) {
-      session = await ReflectionChatSession.create({
-        teamId,
-        sessionId: crypto.randomUUID(),
-        status: "in_progress",
-        currentIndex: 0,
-        clarifyCount: 0,
-        messages: [],
-        answers: [],
-        aiSummary: "",
-      });
-    }
+    if (!session) return jsonError(409, "No active reflection session. Call /start first.");
 
-    // if already has messages, just return
-    if (session.messages.length > 0) {
-      return NextResponse.json({
-        ok: true,
-        sessionId: session.sessionId,
-        status: session.status,
-        messages: session.messages,
-        runningSummary: session.aiSummary || "",
-        summary: session.status === "ready_to_submit" ? (session.aiSummary || "") : "",
-      });
-    }
+    session.messages.push({ role: "user", text: userText });
+    session.currentIndex = (session.currentIndex || 0) + 1;
 
     const recent = await ReflectionSubmission.find({
       teamId,
@@ -79,28 +64,28 @@ export async function POST() {
       recentSummaries,
     });
 
+    session.aiSummary = controller.runningSummary;
+    session.answers = controller.answers;
+    session.clarifyCount = controller.clarifyCount;
+    session.currentIndex = controller.turnCount;
+
     const assistantText = await runReflectionInterviewer({
       messages: session.messages,
       nextIntent: controller.nextIntent,
     });
 
     session.messages.push({ role: "model", text: assistantText });
-    session.aiSummary = controller.runningSummary;
-    session.answers = controller.answers;
-    session.clarifyCount = controller.clarifyCount;
-    session.currentIndex = controller.turnCount;
     await session.save();
 
     return NextResponse.json({
       ok: true,
-      sessionId: session.sessionId,
+      assistantText,
+      readyToSubmit: controller.readyToSubmit === true,
       status: session.status,
-      messages: session.messages,
       runningSummary: session.aiSummary || "",
-      summary: "",
     });
   } catch (err: any) {
-    console.error("reflection/start error:", err);
+    console.error("reflection/turn error:", err);
     return jsonError(500, "Internal Server Error", err?.message || "Unknown");
   }
 }
