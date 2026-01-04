@@ -127,3 +127,39 @@ export async function PUT(request, context) {
   }
   
 }
+
+/* =========================
+   DELETE /api/teams/[teamId]
+   ========================= */
+export async function DELETE(_req, context) {
+  try {
+    await connectDB();
+
+    // IMPORTANT: params is a Promise in App Router (same as GET/PUT)
+    const { teamId } = await context.params;
+
+    if (!teamId) {
+      return NextResponse.json(
+        { error: "teamId is required" },
+        { status: 400 }
+      );
+    }
+
+    const deleted = await Team.findOneAndDelete({ teamId: String(teamId).trim() });
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Team not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Server error", details: String(err?.message || err) },
+      { status: 500 }
+    );
+  }
+}
+
