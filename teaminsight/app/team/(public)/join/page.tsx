@@ -54,37 +54,37 @@ export default function TeamLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold mb-2">Team Login</h1>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-purple-100 to-indigo-200">
+      <div className="w-full max-w-md rounded-xl border bg-white/90 backdrop-blur-sm p-6 shadow-lg">
+        <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Team Login</h1>
         <p className="text-sm text-gray-600 mb-6">
           Use the Team ID and Access Code provided by the lecturer.
         </p>
 
         {errorMsg ? (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {errorMsg}
           </div>
         ) : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Team ID</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Team ID</label>
             <input
               value={teamId}
               onChange={(e) => setTeamId(e.target.value)}
-              className="w-full rounded-xl border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
               placeholder="e.g., T-001"
               autoComplete="off"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Access Code</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Access Code</label>
             <input
               value={accessCode}
               onChange={(e) => setAccessCode(e.target.value)}
-              className="w-full rounded-xl border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
               placeholder="Enter your access code"
               type="password"
               autoComplete="off"
@@ -93,7 +93,7 @@ export default function TeamLoginPage() {
 
           <button
             disabled={loading}
-            className="w-full rounded-xl bg-black px-4 py-2 text-white disabled:opacity-60"
+            className="w-full rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-white hover:from-purple-700 hover:to-indigo-700 disabled:opacity-60 font-semibold"
             type="submit"
           >
             {loading ? "Signing in..." : "Sign in"}
