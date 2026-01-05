@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { Users, Mail, FileText, MessageSquare, Bell } from "lucide-react";
 
 type TeamMember = {
   memberId: string;
@@ -77,9 +78,9 @@ export default function TeamHomePage() {
         {/* Header */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-3xl font-semibold tracking-tight">Team Home Page</h1>
+            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Team Home Page</h1>
 
-            <div className={`inline-flex items-center rounded-full border px-3 py-1 text-sm ${statusUI.className}`}>
+            <div className={`inline-flex items-center rounded-full border px-4 py-2 text-sm shadow-md ${statusUI.className}`}>
               <span className="font-medium">Status:</span>
               <span className="ml-2">{statusUI.label}</span>
             </div>
@@ -118,10 +119,13 @@ export default function TeamHomePage() {
             {/* Overview + Actions */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* Overview Card */}
-              <section className="lg:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
+              <section className="lg:col-span-2 rounded-xl border bg-white p-6 shadow-lg">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold">Team Overview</h2>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      Team Overview
+                    </h2>
                     <p className="mt-1 text-sm text-gray-600">
                       Key details for this team.
                     </p>
@@ -131,8 +135,8 @@ export default function TeamHomePage() {
                 <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                   <InfoBlock title="Team ID" value={team.teamId} />
                   <InfoBlock title="Project Name" value={team.projectName || "—"} />
-                  <InfoBlock title="Contact Email" value={team.contactEmail || "—"} />
-                  <InfoBlock title="Members" value={`${members.length}`} />
+                  <InfoBlock title="Contact Email" value={team.contactEmail || "—"} icon={<Mail className="w-4 h-4 text-gray-500" />} />
+                  <InfoBlock title="Members" value={`${members.length}`} icon={<Users className="w-4 h-4 text-gray-500" />} />
                 </div>
 
                 <div className="mt-6">
@@ -144,7 +148,7 @@ export default function TeamHomePage() {
                       {members.map((m) => (
                         <div
                           key={m.memberId}
-                          className="flex items-center justify-between rounded-xl border bg-gray-50 px-4 py-3"
+                          className="flex items-center justify-between rounded-xl border bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-3"
                         >
                           <div className="min-w-0">
                             <div className="truncate text-sm font-medium text-gray-900">
@@ -162,7 +166,7 @@ export default function TeamHomePage() {
               </section>
 
               {/* Actions */}
-              <aside className="rounded-2xl border bg-white p-6 shadow-sm">
+              <aside className="rounded-xl border bg-white p-6 shadow-lg">
                 <h2 className="text-lg font-semibold">Actions</h2>
                 <p className="mt-1 text-sm text-gray-600">
                   Continue to the main tools.
@@ -173,22 +177,25 @@ export default function TeamHomePage() {
 
                   <Link
                     href="/team/reflection"
-                    className="rounded-2xl border bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
+                    className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 text-sm font-medium text-white hover:from-purple-700 hover:to-indigo-700 transition flex items-center gap-2"
                   >
+                    <FileText className="w-4 h-4" />
                     Weekly Reflection
                   </Link>
 
                   <Link
                     href="/team/messages"
-                    className="rounded-2xl border bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
+                    className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
                   >
+                    <MessageSquare className="w-4 h-4 text-purple-600" />
                     Messages
                   </Link>
 
                   <Link
                     href="/team/announcements"
-                    className="rounded-2xl border bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
+                    className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
                   >
+                    <Bell className="w-4 h-4 text-purple-600" />
                     Announcements
                   </Link>
 
@@ -205,10 +212,13 @@ export default function TeamHomePage() {
   );
 }
 
-function InfoBlock({ title, value }: { title: string; value: string }) {
+function InfoBlock({ title, value, icon }: { title: string; value: string; icon?: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border bg-gray-50 p-4">
-      <div className="text-xs font-medium text-gray-600">{title}</div>
+    <div className="rounded-xl border border-purple-100 bg-gradient-to-br from-purple-50 to-indigo-50 p-4 shadow-sm">
+      <div className="text-xs font-medium text-gray-600 flex items-center gap-1">
+        {icon}
+        {title}
+      </div>
       <div className="mt-1 text-sm font-semibold text-gray-900">{value}</div>
     </div>
   );
