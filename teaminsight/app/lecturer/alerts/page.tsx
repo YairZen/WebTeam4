@@ -110,21 +110,24 @@ export default function LecturerAlertsPage() {
   }, [filteredAlerts]);
 
   return (
-    <main className="min-h-screen bg-gray-100 px-10 py-10">
+    <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 px-10 py-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Alerts & Notifications</h1>
+        <div>
+          <h1 className="text-4xl font-bold text-gray-800">Alerts & Notifications</h1>
+          <p className="text-gray-600 mt-1">Monitor team alerts and email notifications</p>
+        </div>
 
         <Link
           href="/lecturer/dashboard"
-          className="text-blue-600 hover:underline text-sm"
+          className="text-purple-600 hover:text-purple-700 hover:underline text-sm font-medium"
         >
           ← Back to Dashboard
         </Link>
       </div>
 
       {/* Controls */}
-      <div className="bg-white rounded-xl shadow p-6 mb-8">
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <div className="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full lg:max-w-3xl">
             {/* Team filter */}

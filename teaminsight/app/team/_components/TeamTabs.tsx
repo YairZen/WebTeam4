@@ -17,7 +17,7 @@ export default function TeamTabs() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-2">
+    <nav className="flex gap-2 flex-wrap">
       {tabs.map((t) => {
         const active = pathname === t.href || pathname.startsWith(t.href + "/");
         return (
@@ -25,8 +25,10 @@ export default function TeamTabs() {
             key={t.href}
             href={t.href}
             className={[
-              "rounded-xl px-4 py-2 text-sm transition",
-              active ? "bg-black text-white" : "bg-gray-100 hover:bg-gray-200",
+              "rounded-lg px-6 py-3 text-sm font-semibold transition-all",
+              active 
+                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg" 
+                : "bg-white/70 text-gray-700 hover:bg-white hover:shadow-md",
             ].join(" ")}
           >
             {t.label}

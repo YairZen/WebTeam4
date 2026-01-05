@@ -88,20 +88,23 @@ export default function TeamsAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center text-gray-600">
         Loading analytics…
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 px-10 py-10">
+    <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 px-10 py-10">
       {/* Header */}
       <div className="flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-bold">Teams Analytics</h1>
+        <div>
+          <h1 className="text-4xl font-bold text-gray-800">Teams Analytics</h1>
+          <p className="text-gray-600 mt-1">Visual insights and statistics</p>
+        </div>
         <Link
           href="/lecturer/dashboard"
-          className="text-blue-600 hover:underline text-sm"
+          className="text-purple-600 hover:text-purple-700 hover:underline text-sm font-medium"
         >
           ← Back to Dashboard
         </Link>
@@ -158,8 +161,8 @@ export default function TeamsAnalyticsPage() {
       </div>
 
       {/* Explanation */}
-      <div className="bg-white rounded-lg shadow p-6 max-w-5xl">
-        <h2 className="text-xl font-semibold mb-3">
+      <div className="bg-white rounded-xl shadow-lg p-6 max-w-5xl">
+        <h2 className="text-xl font-semibold mb-3 text-gray-800">
           What These Analytics Show
         </h2>
         <ul className="list-disc list-inside text-gray-700 space-y-1">
@@ -182,8 +185,8 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow p-6">
-      <h3 className="text-lg font-semibold mb-5 text-center">
+    <div className="bg-white rounded-xl shadow-lg p-6">
+      <h3 className="text-lg font-semibold mb-5 text-center text-gray-800">
         {title}
       </h3>
       {children}
