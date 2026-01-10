@@ -15,17 +15,32 @@ export type ReflectionAnswerDoc = {
   updatedAt?: Date;
 };
 
+export type ReflectionColor = "green" | "yellow" | "red";
+
 export type ReflectionChatSessionDoc = {
   teamId: string;
   sessionId: string;
+
   status: "in_progress" | "ready_to_submit" | "submitted";
   currentIndex: number;
   clarifyCount: number;
+
   messages: ChatMsgDoc[];
   answers: ReflectionAnswerDoc[];
+
+  // Internal running summary (not shown to student)
   aiSummary: string;
 
-  // New: timestamp of when the reflection was submitted/confirmed
+  // New: profile + weekly instructions snapshot
+  profileKey: string; // e.g. "default" | "strict" | ...
+  weeklyInstructionsSnapshot: string; // can be empty
+
+  // New: evaluation result (computed on confirm)
+  reflectionScore: number | null; // 0..100
+  reflectionColor: ReflectionColor | null;
+  reflectionReasons: string[];
+
+  // timestamp of when the reflection was submitted/confirmed
   submittedAt?: Date | null;
 
   createdAt?: Date;
@@ -58,6 +73,7 @@ const ReflectionChatSessionSchema = new Schema<ReflectionChatSessionDoc>(
       type: String,
       enum: ["in_progress", "ready_to_submit", "submitted"],
       default: "in_progress",
+      index: true,
     },
 
     currentIndex: { type: Number, default: 0 },
@@ -67,6 +83,20 @@ const ReflectionChatSessionSchema = new Schema<ReflectionChatSessionDoc>(
     answers: { type: [AnswerSchema], default: [] },
 
     aiSummary: { type: String, default: "" },
+
+    // New: profile + weekly instructions snapshot
+    profileKey: { type: String, default: "default", index: true },
+    weeklyInstructionsSnapshot: { type: String, default: "" },
+
+    // New: evaluation result (computed on confirm)
+    reflectionScore: { type: Number, default: null, index: true },
+    reflectionColor: {
+      type: String,
+      enum: ["green", "yellow", "red"],
+      default: null,
+      index: true,
+    },
+    reflectionReasons: { type: [String], default: [] },
 
     // New field (replaces ReflectionSubmission.submittedAt)
     submittedAt: { type: Date, default: null, index: true },
@@ -78,6 +108,9 @@ ReflectionChatSessionSchema.index({ teamId: 1, sessionId: 1 }, { unique: true })
 
 // Helpful for "recent submissions by team" queries
 ReflectionChatSessionSchema.index({ teamId: 1, submittedAt: -1 });
+
+// Helpful for dashboards / filtering by color
+ReflectionChatSessionSchema.index({ teamId: 1, reflectionColor: 1, submittedAt: -1 });
 
 const ModelRef =
   (mongoose.models.ReflectionChatSession as Model<ReflectionChatSessionDoc>) ||

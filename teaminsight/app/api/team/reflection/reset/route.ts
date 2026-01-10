@@ -21,7 +21,9 @@ export async function POST() {
 
     const payload = token ? verifyTeamSession(token) : null;
     const teamId = payload?.teamId;
-    if (!teamId) return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
+    if (!teamId) {
+      return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
+    }
 
     await ReflectionChatSession.deleteMany({
       teamId,

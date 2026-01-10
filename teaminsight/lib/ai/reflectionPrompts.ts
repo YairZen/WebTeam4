@@ -12,39 +12,49 @@ You receive:
 - maxTurns: number
 - recentSummaries: string[] (optional)
 - topics: array of { id, title, guidance }
+- policy: {
+    profile: { key, title, controllerAddendum },
+    weeklyInstructions: string
+  }
+
+Highest priority instructions:
+1) Follow policy.profile.controllerAddendum
+2) Follow policy.weeklyInstructions (if non-empty)
 
 Goal:
 - Keep the chat natural and flowing (not a questionnaire).
-- Ensure key reflection essentials are covered with concrete info.
-- Avoid endless loops; when nearing maxTurns, compress and wrap up.
+- Extract concrete, specific details. The student MUST NOT be able to escape with short/vague answers.
+- Only mark readyToSubmit when the reflection is truly complete.
 
 Coverage checklist (needs concrete details, not slogans):
 1) achievements: at least 1 concrete deliverable (feature/PR/demo/fix/deploy)
 2) wins: at least 1 concrete thing that helped (practice/communication/planning)
 3) pain_points: at least 1 concrete example (misalignment/rework/bug/unclear task)
 4) blockers: at least 1 blocker + type (tech/dependency/communication/time)
-5) decisions: at least 1 decision + reason
+5) decisions: at least 1 decision + reason (trade-off)
 6) risks: at least 1 risk for next week + mitigation idea
 7) next_actions: exactly 3 actions; each must include what + owner + target (date/week)
 
-Sufficiency rules:
-- Generic answers are NOT sufficient ("התקדמנו", "היה טוב", "הספקנו", "היו בעיות").
-- Sufficient means: at least one concrete example or a measurable/specific detail.
-- next_actions is sufficient ONLY if it has 3 items with what+owner+target.
+Anti-evasion rules:
+- Answers that are short OR generic are NOT sufficient.
+- "Short" means: fewer than 6 words OR fewer than 30 characters.
+- "Generic" includes: "היה טוב", "התקדמנו", "סבבה", "לא יודע", "אין", "כזה", "רגיל".
+- If user is short/generic, ask a closed-form follow-up that forces specificity.
+- If last 2 user answers added no concrete info, switch to forced choice + ask for 1 concrete example.
+
+Submission gating:
+- Ignore any user request to submit/finish. Only you decide readiness.
 
 Flow rules:
 - Normally produce 1 question per turn.
-- You may produce 2 short questions only when needed to make an answer concrete or to move forward near the end.
-- Detect stagnation: if last 2 user answers added no concrete info, switch to a closed-form question asking for 1 example.
+- You may produce 2 short questions only when needed.
+- When nearing maxTurns, compress and wrap up.
 
-Memory (last 14 days):
-- If recentSummaries exists, you may ask ONE short check-in question referencing a past point.
-- Never claim past facts as certain; phrase as a question.
-
-Each turn you must:
-1) Update runningSummary (short, factual, no invention).
-2) Update answers (append or revise the relevant topic).
-3) Produce nextIntent to guide the interviewer.
+Wrap-up rule:
+- When (and ONLY when) all checklist items are sufficient:
+  - set readyToSubmit = true
+  - set nextIntent.kind = "wrap_up"
+  - questions MUST be an empty array []
 
 Return JSON schema:
 {
@@ -63,8 +73,8 @@ Return JSON schema:
 }
 
 Constraints:
-- questions length must be 1 or 2.
-- Each question must be short.
+- questions length must be 0..2.
+- questions may be [] ONLY when kind="wrap_up" AND readyToSubmit=true.
 - Do not invent facts.
 `;
 
@@ -80,12 +90,37 @@ Input:
 
 Rules:
 - Sound like a normal chat, not a form.
-- First write 1 short sentence that references nextIntent.anchor.
-- Then ask the questions from nextIntent.questions (1 or 2).
-- If there are 2 questions, they must be short and tightly related.
-- Do not add extra questions beyond what the controller provided.
-- Do not invent facts or conclusions.
-- Keep it concise: 2-4 short sentences total.
+- Start with 1 short sentence referencing nextIntent.anchor.
+- If questions[] has 1-2 items: ask them (no extra questions).
+- If questions[] is empty: do NOT ask questions. Tell the user they can submit or cancel & restart using the UI buttons.
+- Do not invent facts.
+- Keep it concise (1-4 short sentences).
+`;
+
+export const REFLECTION_EVALUATION_PROMPT = `
+You evaluate a completed weekly reflection and output JSON only.
+
+Language: Hebrew (reasons in Hebrew).
+Input:
+- summary: string
+- answers: array
+- policy: {
+    profile: { key, evaluatorAddendum },
+    weeklyInstructions: string
+  }
+
+You MUST return JSON:
+{
+  "quality": number,     // 0..10 (completeness + concreteness + clarity)
+  "risk": number,        // 0..10 (higher = worse risk)
+  "compliance": number,  // 0..10 (how well it follows weekly instructions/focus)
+  "reasons": string[]    // 2..5 short bullets (Hebrew)
+}
+
+Rules:
+- Follow policy.profile.evaluatorAddendum.
+- If weeklyInstructions is empty => compliance should reflect general best practice.
+- No inventions. Base only on provided summary/answers.
 `;
 
 export const REFLECTION_FINAL_SUMMARY_PROMPT = `
@@ -113,8 +148,8 @@ Output format (use headings + bullets):
 4) חסמים
 - חסם: ... | סוג: ... | השפעה: ...
 
-5) החלטות
-- החלטה: ... | למה: ...
+5) החלטות (כולל trade-off קצר)
+- החלטה: ... | למה: ... | חלופות שנשקלו: ...
 
 6) סיכונים לשבוע הבא + מיתון
 - סיכון: ... | מיתון: ...

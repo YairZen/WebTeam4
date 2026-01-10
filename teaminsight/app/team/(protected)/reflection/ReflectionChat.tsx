@@ -25,10 +25,6 @@ type TurnRes =
     }
   | { error: string; details?: string };
 
-type FinishRes =
-  | { ok: true; status: "ready_to_submit"; summary: string }
-  | { error: string; details?: string };
-
 type ConfirmRes =
   | { ok: true; submissionId: string }
   | { error: string; details?: string };
@@ -48,7 +44,6 @@ export default function ReflectionChat() {
     "unknown" | "in_progress" | "ready_to_submit" | "submitted"
   >("unknown");
 
-  const [summary, setSummary] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const canSend = useMemo(() => {
@@ -58,7 +53,6 @@ export default function ReflectionChat() {
   async function start() {
     setLoading(true);
     setErrorMsg("");
-    setSummary("");
 
     try {
       const res = await fetch("/api/team/reflection/start", {
@@ -71,15 +65,14 @@ export default function ReflectionChat() {
       if (!res.ok || !isOk<Extract<StartRes, { ok: true }>>(data)) {
         setStatus("unknown");
         setMessages([{ role: "model", text: "לא הצלחתי להתחיל רפלקציה כרגע." }]);
-        setErrorMsg(("error" in data && data.error) ? data.error : "Failed to start");
+        setErrorMsg(
+          ("error" in data && data.error) ? data.error : "Failed to start"
+        );
         return;
       }
 
       setMessages(Array.isArray(data.messages) ? data.messages : []);
       setStatus(data.status || "in_progress");
-
-      const s = typeof data.summary === "string" ? data.summary.trim() : "";
-      if (s) setSummary(s);
     } catch {
       setStatus("unknown");
       setMessages([{ role: "model", text: "לא הצלחתי להתחיל רפלקציה כרגע." }]);
@@ -120,7 +113,8 @@ export default function ReflectionChat() {
         throw new Error(errText);
       }
 
-      const assistantText = (data.assistantText || "").trim() || "קיבלתי. אפשר לשתף עוד קצת?";
+      const assistantText =
+        (data.assistantText || "").trim() || "קיבלתי. אפשר לשתף עוד קצת?";
       setMessages([...optimistic, { role: "model", text: assistantText }]);
 
       setStatus(data.status || "in_progress");
@@ -130,36 +124,6 @@ export default function ReflectionChat() {
         { role: "model", text: "משהו השתבש. נסו שוב בעוד רגע." },
       ]);
       setErrorMsg(e?.message || "Request failed");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function finish() {
-    if (loading) return;
-
-    setLoading(true);
-    setErrorMsg("");
-
-    try {
-      const res = await fetch("/api/team/reflection/finish", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      const data = (await res.json().catch(() => ({}))) as FinishRes;
-
-      if (!res.ok || !isOk<Extract<FinishRes, { ok: true }>>(data)) {
-        const errText =
-          ("error" in data && typeof data.error === "string" && data.error) ||
-          "Finish failed";
-        throw new Error(errText);
-      }
-
-      setSummary((data.summary || "").trim());
-      setStatus("ready_to_submit");
-    } catch (e: any) {
-      setErrorMsg(e?.message || "Finish failed");
     } finally {
       setLoading(false);
     }
@@ -200,7 +164,6 @@ export default function ReflectionChat() {
 
     setLoading(true);
     setErrorMsg("");
-    setSummary("");
 
     try {
       const res = await fetch("/api/team/reflection/reset", {
@@ -239,7 +202,7 @@ export default function ReflectionChat() {
             disabled={loading}
             type="button"
           >
-            איפוס
+            {status === "ready_to_submit" ? "ביטול והתחלה מחדש" : "איפוס"}
           </button>
 
           {status === "ready_to_submit" ? (
@@ -249,18 +212,9 @@ export default function ReflectionChat() {
               disabled={loading}
               type="button"
             >
-              אישור והגשה
+              הגשה
             </button>
-          ) : (
-            <button
-              className="rounded-xl border px-3 py-2 text-sm"
-              onClick={finish}
-              disabled={loading || status !== "in_progress"}
-              type="button"
-            >
-              הפקת סיכום
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -290,29 +244,13 @@ export default function ReflectionChat() {
         ))}
       </div>
 
-      {status === "ready_to_submit" && summary.trim() ? (
-        <div className="rounded-xl border bg-gray-50 p-3">
-          <div className="text-sm font-semibold mb-2">סיכום לפני הגשה</div>
-          <pre
-            className="whitespace-pre-wrap text-sm"
-            dir="auto"
-            style={{ unicodeBidi: "plaintext" }}
-          >
-            {summary}
-          </pre>
-          <div className="text-xs opacity-70 mt-2">
-            אם חסר משהו — אפשר ללחוץ “איפוס” ולמלא מחדש, או להמשיך שיחה ואז להפיק סיכום שוב.
-          </div>
-        </div>
-      ) : null}
-
       <div className="flex gap-2">
         <textarea
           className="flex-1 rounded-xl border p-2"
           rows={2}
           placeholder={
             status === "ready_to_submit"
-              ? "הרפלקציה מוכנה להגשה. אפשר לאפס או לאשר."
+              ? "הרפלקציה מוכנה להגשה. אפשר להגיש או לבטל ולהתחיל מחדש."
               : "כתבו תשובה… (Enter לשליחה)"
           }
           value={input}

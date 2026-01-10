@@ -16,15 +16,11 @@ import Link from "next/link";
 export default function LecturerDashboardPage() {
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center px-6 py-12">
-
       {/* Page Title */}
-      <h1 className="text-3xl font-bold mb-8">
-        Lecturer Dashboard
-      </h1>
+      <h1 className="text-3xl font-bold mb-8">Lecturer Dashboard</h1>
 
       {/* Navigation Cards */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
-
         {/* Teams Overview */}
         <DashboardCard
           title="Teams Overview"
@@ -60,6 +56,12 @@ export default function LecturerDashboardPage() {
           href="/lecturer/alerts"
         />
 
+        {/* NEW: Reflection Settings */}
+        <DashboardCard
+          title="Weekly Reflection Settings"
+          description="Choose reflection profile and set weekly instructions"
+          href="/lecturer/reflection-settings"
+        />
       </section>
     </main>
   );

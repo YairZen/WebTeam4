@@ -6,10 +6,13 @@ import { connectDB } from "@/lib/db";
 import { verifyTeamSession } from "@/lib/teamSession";
 
 import ReflectionChatSession from "@/models/ReflectionChatSession";
-
 import { runReflectionController, runReflectionInterviewer } from "@/lib/ai/gemini";
+import { REFLECTION_TOPICS } from "@/lib/reflection/topics";
+import { getEffectiveReflectionPolicy } from "@/lib/reflection/policy";
 
 export const runtime = "nodejs";
+
+type Msg = { role: "user" | "model"; text: string };
 
 function jsonError(status: number, error: string, details?: string) {
   return NextResponse.json({ error, ...(details ? { details } : {}) }, { status });
@@ -25,11 +28,7 @@ export async function POST() {
     const payload = token ? verifyTeamSession(token) : null;
     const teamId = payload?.teamId;
     if (!teamId) {
-      return jsonError(
-        401,
-        "Unauthorized",
-        "Missing/invalid team_session cookie or payload.teamId"
-      );
+      return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
     }
 
     let session = await ReflectionChatSession.findOne({
@@ -47,24 +46,34 @@ export async function POST() {
         messages: [],
         answers: [],
         aiSummary: "",
+        submittedAt: null,
+        profileKey: "default",
+        weeklyInstructionsSnapshot: "",
+        reflectionScore: null,
+        reflectionColor: null,
+        reflectionReasons: [],
       });
     }
 
-    // if already has messages, just return
-    if (session.messages.length > 0) {
+    // Never return summary to the student.
+    if ((session.messages || []).length > 0) {
       return NextResponse.json({
         ok: true,
         sessionId: session.sessionId,
         status: session.status,
-        messages: session.messages,
-        runningSummary: session.aiSummary || "",
-        summary: session.status === "ready_to_submit" ? (session.aiSummary || "") : "",
+        messages: session.messages as Msg[],
+        runningSummary: "",
+        summary: "",
       });
     }
 
-    // Pull recent submitted summaries from ReflectionChatSession (instead of ReflectionSubmission)
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    // Snapshot policy at the beginning (only when no messages exist).
+    const effective = await getEffectiveReflectionPolicy();
+    session.profileKey = session.profileKey || effective.profileKey || "default";
+    session.weeklyInstructionsSnapshot = effective.weeklyInstructions || "";
 
+    // Recent submitted summaries (last 14 days)
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
     const recentSubmitted = await ReflectionChatSession.find({
       teamId,
       status: "submitted",
@@ -79,6 +88,15 @@ export async function POST() {
       .map((r: any) => r?.aiSummary)
       .filter((s: any) => typeof s === "string" && s.trim().length > 0);
 
+    const policy = {
+      profile: {
+        key: effective.profile.key,
+        title: effective.profile.title,
+        controllerAddendum: effective.profile.controllerAddendum,
+      },
+      weeklyInstructions: session.weeklyInstructionsSnapshot || "",
+    };
+
     const controller = await runReflectionController({
       messages: session.messages,
       answers: session.answers,
@@ -87,6 +105,7 @@ export async function POST() {
       turnCount: session.currentIndex || 0,
       maxTurns: 16,
       recentSummaries,
+      policy,
     });
 
     const assistantText = await runReflectionInterviewer({
@@ -106,8 +125,8 @@ export async function POST() {
       ok: true,
       sessionId: session.sessionId,
       status: session.status,
-      messages: session.messages,
-      runningSummary: session.aiSummary || "",
+      messages: session.messages as Msg[],
+      runningSummary: "",
       summary: "",
     });
   } catch (err: any) {

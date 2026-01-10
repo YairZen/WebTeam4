@@ -3,6 +3,7 @@ import {
   REFLECTION_CONTROLLER_PROMPT,
   REFLECTION_INTERVIEWER_PROMPT,
   REFLECTION_FINAL_SUMMARY_PROMPT,
+  REFLECTION_EVALUATION_PROMPT,
 } from "./reflectionPrompts";
 import { REFLECTION_TOPICS } from "@/lib/reflection/topics";
 
@@ -27,6 +28,16 @@ export type NextIntent = {
   questions: string[];
 };
 
+export type ReflectionPolicy = {
+  profile: {
+    key: string;
+    title?: string;
+    controllerAddendum?: string;
+    evaluatorAddendum?: string;
+  };
+  weeklyInstructions: string;
+};
+
 export type ControllerInput = {
   messages: ChatMsg[];
   answers: ReflectionAnswer[];
@@ -35,6 +46,10 @@ export type ControllerInput = {
   turnCount: number;
   maxTurns: number;
   recentSummaries: string[];
+
+  // New: policy influences the controller behavior (profile + weekly instructions)
+  // Optional so you won't break existing calls immediately.
+  policy?: ReflectionPolicy;
 };
 
 export type ControllerResult = {
@@ -48,9 +63,15 @@ export type ControllerResult = {
 
 function stripCodeFences(s: string) {
   const t = (s || "").trim();
+
   if (t.startsWith("```")) {
-    return t.replace(/^```[a-zA-Z]*\n?/, "").replace(/```$/, "").trim();
+    // Remove opening ```lang? and closing ```
+    return t
+      .replace(/^```[a-zA-Z]*\n?/, "")
+      .replace(/```[\s]*$/, "")
+      .trim();
   }
+
   return t;
 }
 
@@ -64,6 +85,12 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
     const ni = (obj as any).nextIntent;
     if (!ni || typeof ni !== "object") return fallback;
 
+    const kind = ni.kind;
+    const validKind: NextIntent["kind"] =
+      kind === "clarify_current" || kind === "advance_topic" || kind === "wrap_up"
+        ? kind
+        : fallback.nextIntent.kind;
+
     const questionsRaw = Array.isArray(ni.questions) ? ni.questions : [];
     const questions = questionsRaw
       .filter((q: any) => typeof q === "string")
@@ -71,20 +98,17 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
       .filter(Boolean)
       .slice(0, 2);
 
-    if (questions.length === 0) return fallback;
-
-    const kind = ni.kind;
-    const validKind: NextIntent["kind"] =
-      kind === "clarify_current" || kind === "advance_topic" || kind === "wrap_up"
-        ? kind
-        : fallback.nextIntent.kind;
+    // Allow empty questions only for wrap_up
+    if (questions.length === 0 && validKind !== "wrap_up") return fallback;
 
     return {
       runningSummary:
         typeof (obj as any).runningSummary === "string"
           ? (obj as any).runningSummary.trim()
           : fallback.runningSummary,
+
       answers: Array.isArray((obj as any).answers) ? (obj as any).answers : fallback.answers,
+
       nextIntent: {
         kind: validKind,
         topicId: typeof ni.topicId === "string" ? ni.topicId : null,
@@ -92,8 +116,11 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
         styleNote: typeof ni.styleNote === "string" ? ni.styleNote.trim() : "",
         questions,
       },
+
       readyToSubmit: (obj as any).readyToSubmit === true,
-      clarifyCount: Number.isFinite((obj as any).clarifyCount) ? (obj as any).clarifyCount : fallback.clarifyCount,
+      clarifyCount: Number.isFinite((obj as any).clarifyCount)
+        ? (obj as any).clarifyCount
+        : fallback.clarifyCount,
       turnCount: Number.isFinite((obj as any).turnCount) ? (obj as any).turnCount : fallback.turnCount,
     };
   } catch {
@@ -101,8 +128,26 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
   }
 }
 
+function defaultPolicy(): ReflectionPolicy {
+  return {
+    profile: {
+      key: "default",
+      title: "Default",
+      controllerAddendum: "",
+      evaluatorAddendum: "",
+    },
+    weeklyInstructions: "",
+  };
+}
+
 export async function runReflectionController(input: ControllerInput): Promise<ControllerResult> {
-  const payload = JSON.stringify({ ...input, topics: REFLECTION_TOPICS });
+  const policy = input.policy ?? defaultPolicy();
+
+  const payload = JSON.stringify({
+    ...input,
+    topics: REFLECTION_TOPICS,
+    policy,
+  });
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
@@ -162,4 +207,63 @@ export async function runReflectionFinalSummary(input: {
   });
 
   return (response.text ?? "").trim();
+}
+
+export type ReflectionEval = {
+  quality: number; // 0..10
+  risk: number; // 0..10 (higher = worse)
+  compliance: number; // 0..10
+  reasons: string[]; // short bullets in Hebrew
+};
+
+function clamp0to10(x: any): number {
+  const n = Number(x);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(10, n));
+}
+
+export async function runReflectionEvaluation(input: {
+  summary: string;
+  answers: ReflectionAnswer[];
+  policy?: ReflectionPolicy;
+}): Promise<ReflectionEval> {
+  const policy = input.policy ?? defaultPolicy();
+
+  const payload = JSON.stringify({
+    summary: input.summary,
+    answers: input.answers,
+    policy,
+  });
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      { role: "user" as const, parts: [{ text: REFLECTION_EVALUATION_PROMPT }] },
+      { role: "user" as const, parts: [{ text: payload }] },
+    ],
+  });
+
+  const raw = stripCodeFences(response.text ?? "{}");
+
+  try {
+    const obj = JSON.parse(raw);
+
+    const reasons = Array.isArray(obj?.reasons)
+      ? obj.reasons.filter((s: any) => typeof s === "string").map((s: string) => s.trim()).filter(Boolean).slice(0, 5)
+      : [];
+
+    return {
+      quality: clamp0to10(obj?.quality),
+      risk: clamp0to10(obj?.risk),
+      compliance: clamp0to10(obj?.compliance),
+      reasons: reasons.length > 0 ? reasons : ["לא נמצאו סיבות מפורטות — ניתוח בסיסי בוצע."],
+    };
+  } catch {
+    return {
+      quality: 5,
+      risk: 5,
+      compliance: 5,
+      reasons: ["לא הצלחתי לנתח בוודאות — הוחזר סיווג ברירת מחדל."],
+    };
+  }
 }
