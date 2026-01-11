@@ -1,6 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import {
+  Send,
+  RotateCcw,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+} from "lucide-react";
 
 type Msg = { role: "user" | "model"; text: string };
 
@@ -190,82 +197,169 @@ export default function ReflectionChat() {
     }
   }
 
+  const statusPill =
+    status === "ready_to_submit"
+      ? "bg-amber-50 text-amber-900 border-amber-200/70"
+      : status === "submitted"
+        ? "bg-emerald-50 text-emerald-900 border-emerald-200/70"
+        : status === "in_progress"
+          ? "bg-sky-50 text-sky-900 border-sky-200/70"
+          : "bg-slate-50 text-slate-800 border-slate-200/70";
+
+  const statusLabel =
+    status === "ready_to_submit"
+      ? "מוכן להגשה"
+      : status === "submitted"
+        ? "הוגש"
+        : status === "in_progress"
+          ? "בתהליך"
+          : "לא ידוע";
+
   return (
-    <div className="flex flex-col gap-3 p-4" dir="rtl">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-lg font-semibold">רפלקציה שבועית</div>
+    <div className="min-h-[calc(100vh-56px)] bg-[#E8EDF3] relative overflow-hidden" dir="rtl">
+      {/* soft background blobs */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-emerald-300/12 blur-3xl" />
+        <div className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-sky-300/12 blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-300/8 blur-3xl" />
+      </div>
 
-        <div className="flex gap-2">
-          <button
-            className="rounded-xl border px-3 py-2 text-sm"
-            onClick={reset}
-            disabled={loading}
-            type="button"
-          >
-            {status === "ready_to_submit" ? "ביטול והתחלה מחדש" : "איפוס"}
-          </button>
+     <div className="relative mx-auto w-full max-w-6xl 2xl:max-w-7xl px-3 sm:px-5 py-6 sm:py-8">
+        {/* Header */}
+        <div className="mb-4 sm:mb-6 flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="h-11 w-11 rounded-2xl border border-slate-200 bg-white/45 backdrop-blur flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-emerald-700" />
+              </div>
+              <div>
+                <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
+                  רפלקציה שבועית
+                </div>
+                <div className="mt-1 text-sm sm:text-base text-slate-600">
+                  שיחה קצרה עם ה־AI כדי לגבש רפלקציה להגשה.
+                </div>
+              </div>
+            </div>
 
-          {status === "ready_to_submit" ? (
+            <div className={`shrink-0 inline-flex items-center rounded-full border px-3 py-1.5 text-sm ${statusPill}`}>
+              <span className="font-semibold">סטטוס:</span>
+              <span className="mr-2">{statusLabel}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
             <button
-              className="rounded-xl bg-black px-3 py-2 text-sm text-white"
-              onClick={confirm}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/45 backdrop-blur px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/60 disabled:opacity-60"
+              onClick={reset}
               disabled={loading}
               type="button"
             >
-              הגשה
+              <RotateCcw className="h-4 w-4 text-emerald-700" />
+              {status === "ready_to_submit" ? "ביטול והתחלה מחדש" : "איפוס"}
             </button>
-          ) : null}
-        </div>
-      </div>
 
-      {errorMsg ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          {errorMsg}
+            {status === "ready_to_submit" ? (
+              <button
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-emerald-900/10 hover:bg-emerald-500 disabled:opacity-60 active:translate-y-[1px]"
+                onClick={confirm}
+                disabled={loading}
+                type="button"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                הגשה
+              </button>
+            ) : null}
+          </div>
         </div>
-      ) : null}
 
-      <div className="rounded-xl border p-3 h-[60vh] overflow-auto bg-white">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`mb-3 ${m.role === "user" ? "text-right" : "text-left"}`}
-          >
-            <div className="text-xs opacity-60 mb-1">
-              {m.role === "user" ? "את/ה" : "AI"}
+        {errorMsg ? (
+          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-800 flex gap-2 items-start">
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <div>{errorMsg}</div>
+          </div>
+        ) : null}
+
+        {/* Chat card */}
+        <div className="rounded-2xl border border-slate-200/80 bg-[#F2F5FA] shadow-lg shadow-slate-900/5 overflow-hidden">
+          <div className="h-[58vh] sm:h-[62vh] overflow-auto p-4 sm:p-5">
+            {messages.length === 0 ? (
+              <div className="text-sm text-slate-600">
+                טוען את השיחה…
+              </div>
+            ) : (
+              messages.map((m, i) => {
+                const isUser = m.role === "user";
+                return (
+                  <div key={i} className={`mb-4 flex ${isUser ? "justify-start" : "justify-end"}`}>
+                    <div className={`max-w-[88%] sm:max-w-[80%] ${isUser ? "text-right" : "text-left"}`}>
+                      <div className={`mb-1 text-xs opacity-70 ${isUser ? "text-slate-700" : "text-slate-700"}`}>
+                        {isUser ? "את/ה" : "AI"}
+                      </div>
+
+                      <div
+                        className={[
+                          "inline-block rounded-2xl border px-4 py-3",
+                          "whitespace-pre-wrap",
+                          isUser
+                            ? "bg-emerald-600 text-white border-emerald-600/20 shadow-sm shadow-emerald-900/10"
+                            : "bg-white/60 text-slate-900 border-slate-200/80",
+                        ].join(" ")}
+                        dir="auto"
+                        style={{ unicodeBidi: "plaintext" }}
+                      >
+                        {m.text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Composer */}
+          <div className="border-t border-slate-200/70 bg-white/35 backdrop-blur p-3 sm:p-4">
+            <div className="flex gap-2 items-stretch">
+              <textarea
+                className="flex-1 rounded-2xl border border-slate-200 bg-white/55 backdrop-blur px-3 py-2.5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-300"
+                rows={2}
+                placeholder={
+                  status === "ready_to_submit"
+                    ? "הרפלקציה מוכנה להגשה. אפשר להגיש או לבטל ולהתחיל מחדש."
+                    : "כתבו תשובה… (Enter לשליחה)"
+                }
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                disabled={loading || status !== "in_progress"}
+              />
+
+              <button
+                className={[
+                  "shrink-0 inline-flex items-center gap-2",
+                  "rounded-2xl px-4 sm:px-5",
+                  "border",
+                  canSend
+                    ? "bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-500"
+                    : "bg-white/45 border-slate-200 text-slate-500",
+                  "font-semibold text-sm sm:text-base",
+                  "disabled:opacity-60",
+                  "active:translate-y-[1px]",
+                ].join(" ")}
+                onClick={send}
+                disabled={!canSend}
+                type="button"
+              >
+                <Send className="h-4 w-4" />
+                {loading ? "…" : "שלח"}
+              </button>
             </div>
-            <div
-              className="inline-block rounded-xl border px-3 py-2 max-w-[85%] whitespace-pre-wrap"
-              dir="auto"
-              style={{ unicodeBidi: "plaintext" }}
-            >
-              {m.text}
+
+            <div className="mt-2 text-xs text-slate-500">
+              טיפ: אפשר להשתמש ב־Shift+Enter לשורה חדשה.
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="flex gap-2">
-        <textarea
-          className="flex-1 rounded-xl border p-2"
-          rows={2}
-          placeholder={
-            status === "ready_to_submit"
-              ? "הרפלקציה מוכנה להגשה. אפשר להגיש או לבטל ולהתחיל מחדש."
-              : "כתבו תשובה… (Enter לשליחה)"
-          }
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={onKeyDown}
-          disabled={loading || status !== "in_progress"}
-        />
-        <button
-          className="rounded-xl border px-4"
-          onClick={send}
-          disabled={!canSend}
-          type="button"
-        >
-          {loading ? "…" : "שלח"}
-        </button>
+        </div>
       </div>
     </div>
   );
