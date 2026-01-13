@@ -264,7 +264,7 @@ export default function TeamHomePage() {
                       Workspace
                     </h2>
                     <p className="mt-1 text-base text-slate-600">
-                      Reflection, AI chat and updates.
+                      Reflection & updates.
                     </p>
                   </div>
                 </div>

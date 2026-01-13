@@ -36,6 +36,10 @@ export async function POST() {
       status: { $in: ["in_progress", "ready_to_submit"] },
     });
 
+    // Snapshot policy for NEW sessions (Approach A)
+    // Also used to fix legacy sessions that were created with "default" but never started.
+    const effective = await getEffectiveReflectionPolicy();
+
     if (!session) {
       session = await ReflectionChatSession.create({
         teamId,
@@ -47,8 +51,11 @@ export async function POST() {
         answers: [],
         aiSummary: "",
         submittedAt: null,
-        profileKey: "default",
-        weeklyInstructionsSnapshot: "",
+
+        // Approach A: lock the session to the effective profile at creation time
+        profileKey: effective.profileKey || "default",
+        weeklyInstructionsSnapshot: effective.weeklyInstructions || "",
+
         reflectionScore: null,
         reflectionColor: null,
         reflectionReasons: [],
@@ -67,10 +74,16 @@ export async function POST() {
       });
     }
 
-    // Snapshot policy at the beginning (only when no messages exist).
-    const effective = await getEffectiveReflectionPolicy();
-    session.profileKey = session.profileKey || effective.profileKey || "default";
-    session.weeklyInstructionsSnapshot = effective.weeklyInstructions || "";
+    // Legacy safety: if session exists but never started, and still "default",
+    // lock it to the currently effective profile now.
+    const currentKey = (session.profileKey || "").trim();
+    if (!currentKey || currentKey === "default") {
+      session.profileKey = effective.profileKey || "default";
+    }
+
+    if (!session.weeklyInstructionsSnapshot || session.weeklyInstructionsSnapshot.trim().length === 0) {
+      session.weeklyInstructionsSnapshot = effective.weeklyInstructions || "";
+    }
 
     // Recent submitted summaries (last 14 days)
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
