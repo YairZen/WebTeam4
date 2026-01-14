@@ -2,26 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-<<<<<<< HEAD
 import type { ReactNode } from "react";
-import {
-  Users,
-  Bot,
-  Sparkles,
-  MessageSquare,
-  PenLine,
-  Home,
-  Mail,
-  Hash,
-  Bell,
-  RefreshCw,
-  AlertTriangle,
-  CircleDot,
-  Command,
-} from "lucide-react";
-=======
 import { Users, Mail, FileText, MessageSquare, Bell } from "lucide-react";
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
 
 type TeamMember = {
   memberId: string;
@@ -44,32 +26,16 @@ function getStatusUI(status?: string) {
   const s = (status || "").toLowerCase();
 
   if (s === "green") {
-    return {
-      label: "Green",
-      pillClass: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
-      dotClass: "text-emerald-600",
-    };
+    return { label: "Green", className: "bg-green-50 text-green-700 border-green-200" };
   }
   if (s === "yellow") {
-    return {
-      label: "Yellow",
-      pillClass: "bg-amber-50 text-amber-900 border-amber-200/70",
-      dotClass: "text-amber-600",
-    };
+    return { label: "Yellow", className: "bg-yellow-50 text-yellow-800 border-yellow-200" };
   }
   if (s === "red") {
-    return {
-      label: "Red",
-      pillClass: "bg-rose-50 text-rose-800 border-rose-200/70",
-      dotClass: "text-rose-600",
-    };
+    return { label: "Red", className: "bg-red-50 text-red-700 border-red-200" };
   }
 
-  return {
-    label: status || "Unknown",
-    pillClass: "bg-slate-50 text-slate-800 border-slate-200/70",
-    dotClass: "text-slate-500",
-  };
+  return { label: status || "Unknown", className: "bg-gray-50 text-gray-700 border-gray-200" };
 }
 
 export default function TeamHomePage() {
@@ -87,7 +53,7 @@ export default function TeamHomePage() {
 
       if (!res.ok || !("ok" in data)) {
         setTeam(null);
-        setErrorMsg(("error" in data && data.error) ? data.error : "Failed to load team.");
+        setErrorMsg("error" in data && data.error ? data.error : "Failed to load team.");
         return;
       }
 
@@ -108,108 +74,34 @@ export default function TeamHomePage() {
   const members = team?.members || [];
 
   return (
-<<<<<<< HEAD
-    <div className="min-h-screen bg-[#E8EDF3] relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-28 -left-28 h-96 w-96 rounded-full bg-emerald-300/14 blur-3xl" />
-        <div className="absolute -bottom-36 -right-28 h-[30rem] w-[30rem] rounded-full bg-sky-300/14 blur-3xl" />
-        <div className="absolute top-1/3 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-indigo-300/10 blur-3xl" />
-      </div>
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <Users className="absolute -top-12 -left-12 h-52 w-52 text-emerald-900 opacity-[0.045] rotate-[-12deg]" />
-        <Bot className="absolute top-10 -right-14 h-52 w-52 text-indigo-900 opacity-[0.042] rotate-[10deg]" />
-        <MessageSquare className="absolute -bottom-14 left-10 h-56 w-56 text-slate-900 opacity-[0.04] rotate-[8deg]" />
-        <PenLine className="absolute bottom-14 -right-10 h-48 w-48 text-sky-900 opacity-[0.04] rotate-[-10deg]" />
-        <Sparkles className="absolute top-24 left-1/2 -translate-x-1/2 h-44 w-44 text-emerald-900 opacity-[0.03] rotate-[6deg]" />
-        <Home className="absolute top-1/2 right-1/3 h-44 w-44 text-slate-900 opacity-[0.02] rotate-[10deg]" />
-      </div>
-
-      <main className="mx-auto w-full max-w-7xl px-6 lg:px-10 py-10 lg:py-14 relative">
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-2xl border border-slate-200 bg-white/40 backdrop-blur flex items-center justify-center">
-                  <Home className="h-5 w-5 text-emerald-700" />
-                </div>
-
-                <div>
-                  <h1 className="text-4xl lg:text-5xl font-semibold tracking-tight text-slate-900">
-                    Team Home
-                  </h1>
-                  <p className="mt-2 text-base lg:text-lg text-slate-600">
-                    Your team hub: status, members and quick access.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-base ${statusUI.pillClass}`}
-              >
-                <CircleDot className={`h-4 w-4 ${statusUI.dotClass}`} />
-                <span className="font-semibold">Status:</span>
-                <span>{statusUI.label}</span>
-              </div>
-=======
     <main className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-6">
-        {/* Header */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Team Home Page</h1>
+            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+              Team Home Page
+            </h1>
 
-            <div className={`inline-flex items-center rounded-full border px-4 py-2 text-sm shadow-md ${statusUI.className}`}>
+            <div
+              className={`inline-flex items-center rounded-full border px-4 py-2 text-sm shadow-md ${statusUI.className}`}
+            >
               <span className="font-medium">Status:</span>
               <span className="ml-2">{statusUI.label}</span>
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
             </div>
           </div>
 
-          {loading ? (
-            <div className="rounded-2xl border border-slate-200/80 bg-[#F2F5FA] p-8 shadow-lg shadow-slate-900/5">
-              <div className="h-7 w-80 rounded bg-slate-200/60" />
-              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="h-28 rounded-2xl bg-slate-200/60" />
-                <div className="h-28 rounded-2xl bg-slate-200/60" />
-                <div className="h-28 rounded-2xl bg-slate-200/60" />
-                <div className="h-28 rounded-2xl bg-slate-200/60" />
-              </div>
-            </div>
-<<<<<<< HEAD
-          ) : errorMsg ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-8 shadow-lg shadow-slate-900/5">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-6 w-6 text-red-700 mt-0.5" />
-                <div>
-                  <div className="text-base font-semibold text-red-800">Error</div>
-                  <div className="mt-1 text-base text-red-700">{errorMsg}</div>
-                </div>
-              </div>
+          <p className="text-gray-600">Team overview & actions.</p>
+        </div>
 
-              <button
-                onClick={load}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-base font-semibold text-white hover:bg-emerald-500 active:translate-y-[1px]"
-                type="button"
-              >
-                <RefreshCw className="h-5 w-5" />
-                Retry
-              </button>
+        {loading ? (
+          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+            <div className="h-5 w-56 rounded bg-gray-100" />
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="h-20 rounded-xl bg-gray-100" />
+              <div className="h-20 rounded-xl bg-gray-100" />
+              <div className="h-20 rounded-xl bg-gray-100" />
+              <div className="h-20 rounded-xl bg-gray-100" />
             </div>
-          ) : team ? (
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-              <section className="lg:col-span-8 rounded-2xl border border-slate-200/80 bg-[#F2F5FA] p-8 shadow-lg shadow-slate-900/5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <Users className="h-6 w-6 text-emerald-700" />
-                      <h2 className="text-xl lg:text-2xl font-semibold text-slate-900">
-                        Team Overview
-                      </h2>
-                    </div>
-                    <p className="mt-2 text-base text-slate-600">
-                      Basic team details.
-=======
           </div>
         ) : errorMsg ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
@@ -224,187 +116,91 @@ export default function TeamHomePage() {
             </button>
           </div>
         ) : team ? (
-          <>
-            {/* Overview + Actions */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {/* Overview Card */}
-              <section className="lg:col-span-2 rounded-xl border bg-white p-6 shadow-lg">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <Users className="w-5 h-5 text-purple-600" />
-                      Team Overview
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                      Key details for this team.
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <section className="lg:col-span-2 rounded-xl border bg-white p-6 shadow-lg">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Users className="w-5 h-5 text-purple-600" />
+                    Team Overview
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-600">Key details for this team.</p>
                 </div>
+              </div>
 
-<<<<<<< HEAD
-                <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <InfoBlock
-                    title="Team ID"
-                    value={team.teamId}
-                    icon={<Hash className="h-5 w-5 text-slate-600" />}
-                  />
-                  <InfoBlock
-                    title="Project Name"
-                    value={team.projectName || "—"}
-                    icon={<Sparkles className="h-5 w-5 text-slate-600" />}
-                  />
-                  <InfoBlock
-                    title="Contact Email"
-                    value={team.contactEmail || "—"}
-                    icon={<Mail className="h-5 w-5 text-slate-600" />}
-                  />
-                  <InfoBlock
-                    title="Members"
-                    value={`${members.length}`}
-                    icon={<Users className="h-5 w-5 text-slate-600" />}
-                  />
-=======
-                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <InfoBlock title="Team ID" value={team.teamId} />
-                  <InfoBlock title="Project Name" value={team.projectName || "—"} />
-                  <InfoBlock title="Contact Email" value={team.contactEmail || "—"} icon={<Mail className="w-4 h-4 text-gray-500" />} />
-                  <InfoBlock title="Members" value={`${members.length}`} icon={<Users className="w-4 h-4 text-gray-500" />} />
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
-                </div>
+              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <InfoBlock title="Team ID" value={team.teamId} />
+                <InfoBlock title="Project Name" value={team.projectName || "—"} />
+                <InfoBlock
+                  title="Contact Email"
+                  value={team.contactEmail || "—"}
+                  icon={<Mail className="w-4 h-4 text-gray-500" />}
+                />
+                <InfoBlock
+                  title="Members"
+                  value={`${members.length}`}
+                  icon={<Users className="w-4 h-4 text-gray-500" />}
+                />
+              </div>
 
-                <div className="mt-8">
-                  <div className="flex items-center gap-2 text-base font-semibold text-slate-900">
-                    <Users className="h-5 w-5 text-emerald-700" />
-                    Members
-                  </div>
-
-                  {members.length === 0 ? (
-                    <div className="mt-3 text-base text-slate-600">No members listed.</div>
-                  ) : (
-                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      {members.map((m) => (
-                        <div
-                          key={m.memberId}
-<<<<<<< HEAD
-                          className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/45 backdrop-blur px-5 py-4"
-=======
-                          className="flex items-center justify-between rounded-xl border bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-3"
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
-                        >
-                          <div className="flex items-center gap-4 min-w-0">
-                            <div className="h-11 w-11 rounded-2xl border border-slate-200 bg-white/50 flex items-center justify-center">
-                              <Users className="h-5 w-5 text-emerald-700" />
-                            </div>
-
-                            <div className="min-w-0">
-                              <div className="truncate text-base font-semibold text-slate-900">
-                                {m.displayName || "Member"}
-                              </div>
-                              <div className="truncate text-sm text-slate-600">
-                                {m.memberId}
-                              </div>
-                            </div>
+              <div className="mt-6">
+                <div className="text-sm font-medium text-gray-900">Members</div>
+                {members.length === 0 ? (
+                  <div className="mt-2 text-sm text-gray-600">No members listed.</div>
+                ) : (
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {members.map((m) => (
+                      <div
+                        key={m.memberId}
+                        className="flex items-center justify-between rounded-xl border bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium text-gray-900">
+                            {m.displayName || "Member"}
                           </div>
+                          <div className="truncate text-xs text-gray-600">{m.memberId}</div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </section>
-
-<<<<<<< HEAD
-              <aside className="lg:col-span-4 rounded-2xl border border-slate-200/80 bg-[#F2F5FA] p-8 shadow-lg shadow-slate-900/5">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl border border-slate-200 bg-white/45 backdrop-blur flex items-center justify-center">
-                    <Command className="h-6 w-6 text-emerald-700" />
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <h2 className="text-xl lg:text-2xl font-semibold text-slate-900">
-                      Workspace
-                    </h2>
-                    <p className="mt-1 text-base text-slate-600">
-                      Reflection & updates.
-                    </p>
-                  </div>
-=======
-              {/* Actions */}
-              <aside className="rounded-xl border bg-white p-6 shadow-lg">
-                <h2 className="text-lg font-semibold">Actions</h2>
-                <p className="mt-1 text-sm text-gray-600">
-                  Continue to the main tools.
-                </p>
+                )}
+              </div>
+            </section>
 
-                <div className="mt-5 flex flex-col gap-3">
+            <aside className="rounded-xl border bg-white p-6 shadow-lg">
+              <h2 className="text-lg font-semibold">Actions</h2>
+              <p className="mt-1 text-sm text-gray-600">Continue to the main tools.</p>
 
+              <div className="mt-5 flex flex-col gap-3">
+                <Link
+                  href="/team/reflection"
+                  className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 text-sm font-medium text-white hover:from-purple-700 hover:to-indigo-700 transition flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Weekly Reflection
+                </Link>
 
-                  <Link
-                    href="/team/reflection"
-                    className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 text-sm font-medium text-white hover:from-purple-700 hover:to-indigo-700 transition flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Weekly Reflection
-                  </Link>
+                <Link
+                  href="/team/messages"
+                  className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4 text-purple-600" />
+                  Messages
+                </Link>
 
-                  <Link
-                    href="/team/messages"
-                    className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
-                  >
-                    <MessageSquare className="w-4 h-4 text-purple-600" />
-                    Messages
-                  </Link>
-
-                  <Link
-                    href="/team/announcements"
-                    className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
-                  >
-                    <Bell className="w-4 h-4 text-purple-600" />
-                    Announcements
-                  </Link>
-
-
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
-                </div>
-
-                <div className="mt-7 flex flex-col gap-4">
-                  <ActionLink
-                    href="/team/reflection"
-                    icon={<PenLine className="h-5 w-5 text-emerald-700" />}
-                    title="Weekly Reflection"
-                    subtitle="Write reflections with AI guidance"
-                  />
-
-                  <ActionLink
-                    href="/team/announcements"
-                    icon={<Bell className="h-5 w-5 text-emerald-700" />}
-                    title="Announcements"
-                    subtitle="Updates and notices"
-                  />
-                </div>
-              </aside>
-            </div>
-<<<<<<< HEAD
-          ) : null}
-        </div>
-      </main>
-=======
-          </>
+                <Link
+                  href="/team/announcements"
+                  className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
+                >
+                  <Bell className="w-4 h-4 text-purple-600" />
+                  Announcements
+                </Link>
+              </div>
+            </aside>
+          </div>
         ) : null}
       </div>
     </main>
-  );
-}
-
-function InfoBlock({ title, value, icon }: { title: string; value: string; icon?: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-purple-100 bg-gradient-to-br from-purple-50 to-indigo-50 p-4 shadow-sm">
-      <div className="text-xs font-medium text-gray-600 flex items-center gap-1">
-        {icon}
-        {title}
-      </div>
-      <div className="mt-1 text-sm font-semibold text-gray-900">{value}</div>
->>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
-    </div>
   );
 }
 
@@ -415,44 +211,15 @@ function InfoBlock({
 }: {
   title: string;
   value: string;
-  icon: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/45 backdrop-blur p-5">
-      <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
-        {icon}
-        <span>{title}</span>
+    <div className="rounded-xl border border-purple-100 bg-gradient-to-br from-purple-50 to-indigo-50 p-4 shadow-sm">
+      <div className="text-xs font-medium text-gray-600 flex items-center gap-1">
+        {icon ? icon : null}
+        {title}
       </div>
-      <div className="mt-2 text-lg font-semibold text-slate-900">{value}</div>
+      <div className="mt-1 text-sm font-semibold text-gray-900">{value}</div>
     </div>
-  );
-}
-
-function ActionLink({
-  href,
-  icon,
-  title,
-  subtitle,
-}: {
-  href: string;
-  icon: ReactNode;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-2xl border border-slate-200 bg-white/45 backdrop-blur px-5 py-4 transition hover:bg-white/60 hover:border-slate-300"
-    >
-      <div className="flex items-start gap-4">
-        <div className="mt-0.5 h-12 w-12 rounded-2xl border border-slate-200 bg-white/50 flex items-center justify-center">
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <div className="text-lg font-semibold text-slate-900">{title}</div>
-          <div className="mt-1 text-sm text-slate-600 leading-6">{subtitle}</div>
-        </div>
-      </div>
-    </Link>
   );
 }
