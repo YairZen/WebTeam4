@@ -22,7 +22,7 @@ export default function LecturerDashboardPage() {
       <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
         Lecturer Dashboard
       </h1>
-      
+
       <p className="text-gray-600 mb-8">Manage teams, analytics, and communications</p>
 
       {/* Navigation Cards */}
@@ -71,6 +71,15 @@ export default function LecturerDashboardPage() {
           href="/lecturer/alerts"
           icon={<Bell className="w-8 h-8 text-red-600" />}
           color="red"
+        />
+
+        {/* NEW: Reflection Settings */}
+        <DashboardCard
+          title="Weekly Reflection Settings"
+          description="Choose reflection profile and set weekly instructions"
+          href="/lecturer/reflection-settings"
+          icon={<Settings className="w-8 h-8 text-purple-600" />}
+          color="purple"
         />
 
       </section>

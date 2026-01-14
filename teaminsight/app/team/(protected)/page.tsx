@@ -181,14 +181,6 @@ export default function TeamHomePage() {
                 </Link>
 
                 <Link
-                  href="/team/messages"
-                  className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
-                >
-                  <MessageSquare className="w-4 h-4 text-purple-600" />
-                  Messages
-                </Link>
-
-                <Link
                   href="/team/announcements"
                   className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
                 >
