@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+<<<<<<< HEAD
 import type { ReactNode } from "react";
 import {
   Users,
@@ -18,6 +19,9 @@ import {
   CircleDot,
   Command,
 } from "lucide-react";
+=======
+import { Users, Mail, FileText, MessageSquare, Bell } from "lucide-react";
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
 
 type TeamMember = {
   memberId: string;
@@ -104,6 +108,7 @@ export default function TeamHomePage() {
   const members = team?.members || [];
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-[#E8EDF3] relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <div className="absolute -top-28 -left-28 h-96 w-96 rounded-full bg-emerald-300/14 blur-3xl" />
@@ -146,6 +151,18 @@ export default function TeamHomePage() {
                 <span className="font-semibold">Status:</span>
                 <span>{statusUI.label}</span>
               </div>
+=======
+    <main className="mx-auto w-full max-w-6xl px-4 py-8">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Team Home Page</h1>
+
+            <div className={`inline-flex items-center rounded-full border px-4 py-2 text-sm shadow-md ${statusUI.className}`}>
+              <span className="font-medium">Status:</span>
+              <span className="ml-2">{statusUI.label}</span>
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
             </div>
           </div>
 
@@ -159,6 +176,7 @@ export default function TeamHomePage() {
                 <div className="h-28 rounded-2xl bg-slate-200/60" />
               </div>
             </div>
+<<<<<<< HEAD
           ) : errorMsg ? (
             <div className="rounded-2xl border border-red-200 bg-red-50/80 p-8 shadow-lg shadow-slate-900/5">
               <div className="flex items-start gap-3">
@@ -191,10 +209,40 @@ export default function TeamHomePage() {
                     </div>
                     <p className="mt-2 text-base text-slate-600">
                       Basic team details.
+=======
+          </div>
+        ) : errorMsg ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <div className="text-sm font-medium text-red-800">Error</div>
+            <div className="mt-1 text-sm text-red-700">{errorMsg}</div>
+            <button
+              onClick={load}
+              className="mt-4 rounded-xl bg-black px-4 py-2 text-sm text-white"
+              type="button"
+            >
+              Retry
+            </button>
+          </div>
+        ) : team ? (
+          <>
+            {/* Overview + Actions */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {/* Overview Card */}
+              <section className="lg:col-span-2 rounded-xl border bg-white p-6 shadow-lg">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      Team Overview
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-600">
+                      Key details for this team.
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
                     </p>
                   </div>
                 </div>
 
+<<<<<<< HEAD
                 <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-2">
                   <InfoBlock
                     title="Team ID"
@@ -216,6 +264,13 @@ export default function TeamHomePage() {
                     value={`${members.length}`}
                     icon={<Users className="h-5 w-5 text-slate-600" />}
                   />
+=======
+                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <InfoBlock title="Team ID" value={team.teamId} />
+                  <InfoBlock title="Project Name" value={team.projectName || "—"} />
+                  <InfoBlock title="Contact Email" value={team.contactEmail || "—"} icon={<Mail className="w-4 h-4 text-gray-500" />} />
+                  <InfoBlock title="Members" value={`${members.length}`} icon={<Users className="w-4 h-4 text-gray-500" />} />
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
                 </div>
 
                 <div className="mt-8">
@@ -231,7 +286,11 @@ export default function TeamHomePage() {
                       {members.map((m) => (
                         <div
                           key={m.memberId}
+<<<<<<< HEAD
                           className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/45 backdrop-blur px-5 py-4"
+=======
+                          className="flex items-center justify-between rounded-xl border bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-3"
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
                         >
                           <div className="flex items-center gap-4 min-w-0">
                             <div className="h-11 w-11 rounded-2xl border border-slate-200 bg-white/50 flex items-center justify-center">
@@ -254,6 +313,7 @@ export default function TeamHomePage() {
                 </div>
               </section>
 
+<<<<<<< HEAD
               <aside className="lg:col-span-4 rounded-2xl border border-slate-200/80 bg-[#F2F5FA] p-8 shadow-lg shadow-slate-900/5">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-2xl border border-slate-200 bg-white/45 backdrop-blur flex items-center justify-center">
@@ -267,6 +327,43 @@ export default function TeamHomePage() {
                       Reflection & updates.
                     </p>
                   </div>
+=======
+              {/* Actions */}
+              <aside className="rounded-xl border bg-white p-6 shadow-lg">
+                <h2 className="text-lg font-semibold">Actions</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  Continue to the main tools.
+                </p>
+
+                <div className="mt-5 flex flex-col gap-3">
+
+
+                  <Link
+                    href="/team/reflection"
+                    className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 text-sm font-medium text-white hover:from-purple-700 hover:to-indigo-700 transition flex items-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Weekly Reflection
+                  </Link>
+
+                  <Link
+                    href="/team/messages"
+                    className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4 text-purple-600" />
+                    Messages
+                  </Link>
+
+                  <Link
+                    href="/team/announcements"
+                    className="rounded-xl border border-purple-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 hover:bg-purple-50 transition flex items-center gap-2"
+                  >
+                    <Bell className="w-4 h-4 text-purple-600" />
+                    Announcements
+                  </Link>
+
+
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
                 </div>
 
                 <div className="mt-7 flex flex-col gap-4">
@@ -286,9 +383,27 @@ export default function TeamHomePage() {
                 </div>
               </aside>
             </div>
+<<<<<<< HEAD
           ) : null}
         </div>
       </main>
+=======
+          </>
+        ) : null}
+      </div>
+    </main>
+  );
+}
+
+function InfoBlock({ title, value, icon }: { title: string; value: string; icon?: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-purple-100 bg-gradient-to-br from-purple-50 to-indigo-50 p-4 shadow-sm">
+      <div className="text-xs font-medium text-gray-600 flex items-center gap-1">
+        {icon}
+        {title}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-gray-900">{value}</div>
+>>>>>>> 15a19b52f430e0c4d999aa7eb9731623f2527ef9
     </div>
   );
 }

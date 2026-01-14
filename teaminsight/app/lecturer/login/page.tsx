@@ -79,38 +79,39 @@ export default function LecturerLoginPage() {
     suitable for all lecturer pages
   */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-8 rounded-lg shadow-md"
+        className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-lg"
       >
-        <h1 className="text-2xl font-semibold text-center mb-6">
+        <h1 className="text-3xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
           Lecturer Login
         </h1>
+        <p className="text-center text-gray-600 mb-6">Welcome back!</p>
 
         {/* Email input */}
-        <label className="block text-sm font-medium mb-1">Email</label>
+        <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full mb-4 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-200"
+          className="w-full mb-4 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
 
         {/* Password input */}
-        <label className="block text-sm font-medium mb-1">Password</label>
+        <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full mb-4 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-200"
+          className="w-full mb-4 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
         />
 
         {/* Error message */}
         {error && (
-          <div className="text-red-600 text-sm mb-3 text-center">
+          <div className="text-red-600 text-sm mb-3 text-center bg-red-50 py-2 rounded-lg">
             {error}
           </div>
         )}
@@ -119,7 +120,7 @@ export default function LecturerLoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition font-semibold"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
@@ -127,7 +128,7 @@ export default function LecturerLoginPage() {
         {/* Link to registration */}
         <div className="text-center mt-4 text-sm text-gray-600">
           Don't have an account?{" "}
-          <Link href="/lecturer/register" className="text-blue-600 hover:underline">
+          <Link href="/lecturer/register" className="text-purple-600 hover:underline font-medium">
             Create one here
           </Link>
         </div>

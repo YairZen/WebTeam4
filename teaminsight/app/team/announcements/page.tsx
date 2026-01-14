@@ -26,11 +26,14 @@ export default function TeamAnnouncementsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold tracking-tight">Announcements</h1>
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">Announcements</h1>
+          <p className="text-gray-600 mt-1">View team announcements from your lecturer</p>
+        </div>
 
         <Link
           href="/team"
-          className="text-blue-600 hover:underline text-sm"
+          className="text-purple-600 hover:text-purple-700 hover:underline text-sm font-medium"
         >
           ← Back to Team Dashboard
         </Link>
@@ -41,14 +44,14 @@ export default function TeamAnnouncementsPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border bg-gray-50 p-6 text-sm text-gray-700">
+        <div className="rounded-xl border bg-gradient-to-br from-purple-50 to-indigo-50 p-6 text-sm text-gray-700 shadow-sm">
           No announcements
         </div>
       ) : (
         items.map((a) => (
           <div
             key={a._id}
-            className="rounded-2xl border bg-white p-5 shadow-sm"
+            className="rounded-xl border border-purple-100 bg-white p-5 shadow-lg"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="text-lg font-semibold text-gray-900">

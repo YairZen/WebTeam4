@@ -108,12 +108,12 @@ export default function TeamsPage() {
   }, [sortedTeams, query, statusFilter]);
 
   return (
-    <main className="min-h-screen bg-gray-100 w-full py-10">
+    <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 w-full py-10">
       <div className="w-full px-4 md:px-8">
         {/* Header row */}
         <div className="flex items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Teams Overview</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Teams Overview</h1>
             <p className="text-gray-600 mt-1 text-sm">
               Monitor team status and quickly drill down into team details.
             </p>
@@ -121,7 +121,7 @@ export default function TeamsPage() {
 
           <Link
             href="/lecturer/dashboard"
-            className="text-blue-600 hover:underline text-sm whitespace-nowrap"
+            className="text-purple-600 hover:text-purple-700 hover:underline text-sm whitespace-nowrap font-medium"
           >
             ← Back to Dashboard
           </Link>
@@ -140,13 +140,13 @@ export default function TeamsPage() {
             </div>
 
             {/* Toolbar: Search + Filter */}
-            <div className="bg-white rounded-lg shadow p-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-start">
+            <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-start">
               <div className="w-full md:max-w-md">
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by Team ID or Project Name..."
-                  className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+                  className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-400"
                 />
               </div>
 
@@ -155,7 +155,7 @@ export default function TeamsPage() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="border rounded-md px-3 py-2 text-sm bg-white"
+                  className="border rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-400"
                 >
                   <option value="all">All</option>
                   <option value="green">Green</option>
@@ -169,7 +169,7 @@ export default function TeamsPage() {
                     setQuery("");
                     setStatusFilter("all");
                   }}
-                  className="text-sm px-3 py-2 rounded-md border hover:bg-gray-50 whitespace-nowrap"
+                  className="text-sm px-3 py-2 rounded-lg border hover:bg-gray-50 whitespace-nowrap"
                 >
                   Reset
                 </button>
@@ -177,7 +177,7 @@ export default function TeamsPage() {
             </div>
 
             {/* Full width table */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse">
                   <thead className="bg-gray-200 sticky top-0 z-10">
@@ -216,8 +216,8 @@ export default function TeamsPage() {
 
                   <tbody>
                     {visibleTeams.map((team) => (
-                      <tr key={team.teamId} className="hover:bg-gray-50 transition">
-                        <td className="px-6 py-4 border-b font-medium text-blue-600">
+                      <tr key={team.teamId} className="hover:bg-purple-50 transition">
+                        <td className="px-6 py-4 border-b font-medium text-purple-600">
                           <Link href={`/lecturer/teams/${team.teamId}`} className="hover:underline">
                             {team.teamId}
                           </Link>
@@ -293,25 +293,25 @@ function KpiCard({
   const styles = {
     neutral: {
       bg: "bg-white",
-      border: "border-gray-200",
+      border: "border-l-4 border-gray-400",
       value: "text-gray-900",
       title: "text-gray-600",
     },
     green: {
       bg: "bg-green-50",
-      border: "border-green-200",
+      border: "border-l-4 border-green-500",
       value: "text-green-700",
       title: "text-green-700",
     },
     yellow: {
       bg: "bg-yellow-50",
-      border: "border-yellow-200",
+      border: "border-l-4 border-yellow-500",
       value: "text-yellow-700",
       title: "text-yellow-700",
     },
     red: {
       bg: "bg-red-50",
-      border: "border-red-200",
+      border: "border-l-4 border-red-500",
       value: "text-red-700",
       title: "text-red-700",
     },
@@ -319,7 +319,7 @@ function KpiCard({
 
   return (
     <div
-      className={`rounded-lg border ${styles.border} ${styles.bg} p-4 shadow-sm`}
+      className={`rounded-xl shadow-lg ${styles.border} ${styles.bg} p-4`}
     >
       <div className={`text-sm font-medium ${styles.title}`}>
         {title}
