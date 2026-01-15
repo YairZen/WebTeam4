@@ -67,12 +67,31 @@ export async function POST(request) {
       };
     });
 
-    await CsvStudentList.insertMany(students);
+    let insertedCount = 0;
+
+    try {
+      const result = await CsvStudentList.insertMany(students, {
+        ordered: false 
+      });
+      insertedCount = result.length;
+    } catch (err) {
+
+      if (err.code === 11000 || err.writeErrors) {
+        insertedCount = err.result?.nInserted ?? 0;
+      } else {
+        throw err;
+      }
+    }
 
     return NextResponse.json(
-      { ok: true, count: students.length },
+      {
+        ok: true,
+        inserted: insertedCount,
+        skipped: students.length - insertedCount
+      },
       { status: 201 }
     );
+
   } catch (err) {
     return NextResponse.json(
       { error: "Server error", details: String(err?.message || err) },
