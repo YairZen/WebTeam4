@@ -9,11 +9,12 @@ export async function GET() {
 
     const allTeams = await Team.find({}).select("teamId").lean();
 
-    // 1. Fetch sessions including 'in_progress' to support Live view
+    // 1. Fetch sessions including 'messages' field to count interaction length
     const allSessions = await ReflectionChatSession.find({ 
         status: { $in: ["submitted", "completed", "in_progress"] } 
       })
-      .select("teamId answers createdAt updatedAt status") 
+      // We must select 'messages' here to count them!
+      .select("teamId messages answers createdAt updatedAt status") 
       .lean();
 
     const sessionsMap = new Map();
@@ -21,13 +22,11 @@ export async function GET() {
     // 2. Aggregate Data
     for (const session of allSessions) {
       
-      // Calculate Word Count
-      const currentSessionWords = session.answers?.reduce((sum, item) => {
-           const answerText = item.answer || "";
-           return sum + (answerText ? answerText.trim().split(/\s+/).length : 0);
-      }, 0) || 0;
+      // --- FIX: Count total messages in the conversation history ---
+      // This includes both AI prompts and User responses
+      const currentSessionMessages = session.messages ? session.messages.length : 0;
 
-      // Calculate Duration (Minutes)
+      // Calculate Duration in MINUTES
       const start = new Date(session.createdAt);
       const end = new Date(session.updatedAt);
       let durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
@@ -38,18 +37,19 @@ export async function GET() {
 
       if (sessionsMap.has(session.teamId)) {
         const existing = sessionsMap.get(session.teamId);
-        existing.totalWords += currentSessionWords;
+        
+        existing.totalMessages += currentSessionMessages;
         existing.totalDuration += durationMinutes;
         existing.sessionCount += 1;
         
-        // Keep the latest timestamp AND the latest status (for Live view)
+        // Keep the latest timestamp AND the latest status
         if (sessionDate > existing.lastActivity) {
             existing.lastActivity = sessionDate;
             existing.latestStatus = session.status; 
         }
       } else {
         sessionsMap.set(session.teamId, {
-            totalWords: currentSessionWords,
+            totalMessages: currentSessionMessages,
             totalDuration: durationMinutes,
             sessionCount: 1,
             lastActivity: sessionDate,
@@ -65,10 +65,13 @@ export async function GET() {
 
       return {
         teamId: team.teamId,
-        avgWords: sessionData ? Math.round(sessionData.totalWords / count) : 0,
+        // Calculate Average Messages
+        avgMessages: sessionData ? Math.round(sessionData.totalMessages / count) : 0,
+        // Calculate Average Duration (Minutes)
         avgDuration: sessionData ? Math.round(sessionData.totalDuration / count) : 0,
+        
         lastActivity: sessionData ? sessionData.lastActivity : null,
-        latestStatus: sessionData ? sessionData.latestStatus : null, // Critical for "Live" indicator
+        latestStatus: sessionData ? sessionData.latestStatus : null,
         sessionCount: sessionData ? sessionData.sessionCount : 0
       };
     });
