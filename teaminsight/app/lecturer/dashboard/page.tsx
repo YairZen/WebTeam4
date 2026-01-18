@@ -5,19 +5,15 @@
  * Main entry page for the lecturer after login.
  * Provides quick overview and navigation to all lecturer features.
  *
- * According to course architecture:
- * - Page-level component (App Router)
- * - No business logic here
- * - Navigation-oriented UI
+ * Refactored to use shared UI components
  */
 
-import Link from "next/link";
 import { Users, BarChart3, Bell, MessageSquare, Settings } from "lucide-react";
+import { DashboardCard } from "@/components/ui";
 
 export default function LecturerDashboardPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex flex-col items-center px-6 py-12">
-
       {/* Page Title */}
       <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
         Lecturer Dashboard
@@ -27,7 +23,6 @@ export default function LecturerDashboardPage() {
 
       {/* Navigation Cards */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
-
         {/* Teams Overview */}
         <DashboardCard
           title="Teams Overview"
@@ -73,7 +68,7 @@ export default function LecturerDashboardPage() {
           color="red"
         />
 
-        {/* NEW: Reflection Settings */}
+        {/* Reflection Settings */}
         <DashboardCard
           title="Weekly Reflection Settings"
           description="Choose reflection profile and set weekly instructions"
@@ -81,49 +76,7 @@ export default function LecturerDashboardPage() {
           icon={<Settings className="w-8 h-8 text-purple-600" />}
           color="purple"
         />
-
       </section>
     </main>
-  );
-}
-
-/**
- * DashboardCard
- * -------------
- * Reusable UI component for dashboard navigation.
- * Pure presentational component (no state).
- */
-function DashboardCard({
-  title,
-  description,
-  href,
-  icon,
-  color = "blue",
-}: {
-  title: string;
-  description: string;
-  href: string;
-  icon: React.ReactNode;
-  color?: "blue" | "purple" | "green" | "indigo" | "red";
-}) {
-  const borderColors = {
-    blue: "border-l-4 border-blue-500",
-    purple: "border-l-4 border-purple-500",
-    green: "border-l-4 border-green-500",
-    indigo: "border-l-4 border-indigo-500",
-    red: "border-l-4 border-red-500",
-  };
-
-  return (
-    <Link
-      href={href}
-      className={`block bg-white rounded-xl shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all transform ${borderColors[color]}`}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        {icon}
-      </div>
-      <p className="text-gray-600">{description}</p>
-    </Link>
   );
 }

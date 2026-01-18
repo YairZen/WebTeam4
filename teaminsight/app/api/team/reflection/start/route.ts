@@ -1,43 +1,38 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+/**
+ * Reflection Start API Route
+ * --------------------------
+ * POST /api/team/reflection/start - Start or resume a reflection session
+ */
+
 import crypto from "crypto";
-
 import { connectDB } from "@/lib/db";
-import { verifyTeamSession } from "@/lib/teamSession";
-
+import { successResponse, withErrorHandler, requireTeamAuth } from "@/lib/api";
+import { getRecentSummaries } from "@/lib/api/reflection";
 import ReflectionChatSession from "@/models/ReflectionChatSession";
 import { runReflectionController, runReflectionInterviewer } from "@/lib/ai/gemini";
-import { REFLECTION_TOPICS } from "@/lib/reflection/topics";
 import { getEffectiveReflectionPolicy } from "@/lib/reflection/policy";
+import { REFLECTION } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
 type Msg = { role: "user" | "model"; text: string };
 
-function jsonError(status: number, error: string, details?: string) {
-  return NextResponse.json({ error, ...(details ? { details } : {}) }, { status });
-}
-
 export async function POST() {
-  try {
-    await connectDB();
-
-    const cookieStore = await cookies();
-    const token = cookieStore.get("team_session")?.value;
-
-    const payload = token ? verifyTeamSession(token) : null;
-    const teamId = payload?.teamId;
-    if (!teamId) {
-      return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
+  return withErrorHandler(async () => {
+    const authResult = await requireTeamAuth();
+    if ("error" in authResult) {
+      return authResult.error;
     }
+
+    const { teamId } = authResult;
+    await connectDB();
 
     let session = await ReflectionChatSession.findOne({
       teamId,
       status: { $in: ["in_progress", "ready_to_submit"] },
     });
 
-    // Snapshot policy for NEW sessions (Approach A)
-    // Also used to fix legacy sessions that were created with "default" but never started.
+    // Snapshot policy for NEW sessions
     const effective = await getEffectiveReflectionPolicy();
 
     if (!session) {
@@ -51,21 +46,17 @@ export async function POST() {
         answers: [],
         aiSummary: "",
         submittedAt: null,
-
-        // Approach A: lock the session to the effective profile at creation time
         profileKey: effective.profileKey || "default",
         weeklyInstructionsSnapshot: effective.weeklyInstructions || "",
-
         reflectionScore: null,
         reflectionColor: null,
         reflectionReasons: [],
       });
     }
 
-    // Never return summary to the student.
+    // Return existing session if messages exist
     if ((session.messages || []).length > 0) {
-      return NextResponse.json({
-        ok: true,
+      return successResponse({
         sessionId: session.sessionId,
         status: session.status,
         messages: session.messages as Msg[],
@@ -74,8 +65,7 @@ export async function POST() {
       });
     }
 
-    // Legacy safety: if session exists but never started, and still "default",
-    // lock it to the currently effective profile now.
+    // Legacy safety: lock profile if not set
     const currentKey = (session.profileKey || "").trim();
     if (!currentKey || currentKey === "default") {
       session.profileKey = effective.profileKey || "default";
@@ -85,21 +75,7 @@ export async function POST() {
       session.weeklyInstructionsSnapshot = effective.weeklyInstructions || "";
     }
 
-    // Recent submitted summaries (last 14 days)
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-    const recentSubmitted = await ReflectionChatSession.find({
-      teamId,
-      status: "submitted",
-      updatedAt: { $gte: fourteenDaysAgo },
-    })
-      .sort({ updatedAt: -1 })
-      .limit(3)
-      .select({ aiSummary: 1 })
-      .lean();
-
-    const recentSummaries = recentSubmitted
-      .map((r: any) => r?.aiSummary)
-      .filter((s: any) => typeof s === "string" && s.trim().length > 0);
+    const recentSummaries = await getRecentSummaries(teamId);
 
     const policy = {
       profile: {
@@ -116,7 +92,7 @@ export async function POST() {
       runningSummary: session.aiSummary || "",
       clarifyCount: session.clarifyCount || 0,
       turnCount: session.currentIndex || 0,
-      maxTurns: 16,
+      maxTurns: REFLECTION.MAX_TURNS,
       recentSummaries,
       policy,
     });
@@ -134,16 +110,12 @@ export async function POST() {
 
     await session.save();
 
-    return NextResponse.json({
-      ok: true,
+    return successResponse({
       sessionId: session.sessionId,
       status: session.status,
       messages: session.messages as Msg[],
       runningSummary: "",
       summary: "",
     });
-  } catch (err: any) {
-    console.error("reflection/start error:", err);
-    return jsonError(500, "Internal Server Error", err?.message || "Unknown");
-  }
+  });
 }

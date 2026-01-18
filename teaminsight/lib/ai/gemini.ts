@@ -8,9 +8,19 @@ import {
 import { REFLECTION_TOPICS } from "@/lib/reflection/topics";
 
 const apiKey = process.env.CEREBRAS_API_KEY;
-if (!apiKey) throw new Error("Missing CEREBRAS_API_KEY");
 
-const client = new Cerebras({ apiKey });
+// Initialize client lazily to allow build without API key
+let _client: Cerebras | null = null;
+
+function getClient(): Cerebras {
+  if (!_client) {
+    if (!apiKey) {
+      throw new Error("Missing CEREBRAS_API_KEY environment variable");
+    }
+    _client = new Cerebras({ apiKey });
+  }
+  return _client;
+}
 
 // ============================================================================
 // TYPES
@@ -485,7 +495,7 @@ export async function runReflectionController(input: ControllerInput): Promise<C
     policy,
   });
 
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_CONTROLLER_PROMPT },
@@ -521,7 +531,7 @@ export async function runReflectionInterviewer(args: {
     topics: REFLECTION_TOPICS,
   });
 
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_INTERVIEWER_PROMPT },
@@ -539,7 +549,7 @@ export async function runReflectionFinalSummary(input: {
 }): Promise<string> {
   const payload = JSON.stringify(input);
 
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_FINAL_SUMMARY_PROMPT },
@@ -565,7 +575,7 @@ export async function runReflectionEvaluation(input: {
     policy,
   });
 
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_EVALUATION_PROMPT },

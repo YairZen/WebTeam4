@@ -1,53 +1,37 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+/**
+ * Reflection Confirm API Route
+ * ----------------------------
+ * POST /api/team/reflection/confirm - Confirm and submit the reflection
+ */
 
 import { connectDB } from "@/lib/db";
-import { verifyTeamSession } from "@/lib/teamSession";
-
+import { successResponse, ApiErrors, withErrorHandler, requireTeamAuth } from "@/lib/api";
+import { extractTasksFromSummary, computeLegacyScore, scoreToColor } from "@/lib/api/reflection";
 import ReflectionChatSession from "@/models/ReflectionChatSession";
 import ReflectionProfile from "@/models/ReflectionProfile";
 import Team from "@/models/Team";
-
 import { runReflectionFinalSummary, runReflectionEvaluation } from "@/lib/ai/gemini";
 
 export const runtime = "nodejs";
 
-function jsonError(status: number, error: string, details?: string) {
-  return NextResponse.json({ error, ...(details ? { details } : {}) }, { status });
-}
-
-// Legacy score computation for backward compatibility
-function computeLegacyScore(evalRes: { quality: number; risk: number; compliance: number }) {
-  const score =
-    (evalRes.quality * 0.45 + (10 - evalRes.risk) * 0.4 + evalRes.compliance * 0.15) * 10;
-  return Math.round(Math.max(0, Math.min(100, score)));
-}
-
-function scoreToColor(score: number, greenMin: number, redMax: number) {
-  if (score >= greenMin) return "green" as const;
-  if (score <= redMax) return "red" as const;
-  return "yellow" as const;
-}
-
 export async function POST() {
-  try {
-    await connectDB();
-
-    const cookieStore = await cookies();
-    const token = cookieStore.get("team_session")?.value;
-
-    const payload = token ? verifyTeamSession(token) : null;
-    const teamId = payload?.teamId;
-    if (!teamId) {
-      return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
+  return withErrorHandler(async () => {
+    const authResult = await requireTeamAuth();
+    if ("error" in authResult) {
+      return authResult.error;
     }
+
+    const { teamId } = authResult;
+    await connectDB();
 
     const session = await ReflectionChatSession.findOne({
       teamId,
       status: "ready_to_submit",
     });
 
-    if (!session) return jsonError(409, "Nothing to confirm");
+    if (!session) {
+      return ApiErrors.conflict("Nothing to confirm");
+    }
 
     // Load the exact profile used by this session
     const profileKey = (session.profileKey || "default").trim() || "default";
@@ -55,16 +39,18 @@ export async function POST() {
       (await ReflectionProfile.findOne({ key: profileKey }).lean()) ||
       (await ReflectionProfile.findOne({ key: "default" }).lean());
 
-    if (!profile) return jsonError(500, "Missing ReflectionProfile", "No default profile found");
+    if (!profile) {
+      return ApiErrors.serverError(new Error("Missing ReflectionProfile: No default profile found"));
+    }
 
-    // 1) Final summary (stored, not returned to student)
+    // 1) Final summary
     const finalSummary = await runReflectionFinalSummary({
       answers: session.answers,
       runningSummary: session.aiSummary || "",
       messages: session.messages,
     });
 
-    // 2) Evaluation with new THS algorithm
+    // 2) Evaluation with THS algorithm
     const evalRes = await runReflectionEvaluation({
       summary: finalSummary,
       answers: session.answers,
@@ -75,16 +61,18 @@ export async function POST() {
       },
     });
 
-    // 3) Use THS score if available, otherwise compute legacy score
+    // 3) Calculate final score
     const thsScore = evalRes.teamHealthScore || 0;
     const legacyScore = computeLegacyScore(evalRes);
     const finalScore = thsScore > 0 ? thsScore : legacyScore;
-    const color = scoreToColor(finalScore, Number(profile.greenMin ?? 75), Number(profile.redMax ?? 45));
+    const color = scoreToColor(
+      finalScore,
+      Number(profile.greenMin ?? 75),
+      Number(profile.redMax ?? 45)
+    );
 
-    // 4) Save all new THS data on session
+    // 4) Save all THS data on session
     session.aiSummary = finalSummary;
-
-    // New THS fields
     session.teamHealthScore = evalRes.teamHealthScore;
     session.thsComponents = evalRes.components;
     session.tuckmanStage = evalRes.tuckmanStage;
@@ -96,7 +84,7 @@ export async function POST() {
     session.concerns = evalRes.concerns || [];
     session.recommendations = evalRes.recommendations || [];
 
-    // Legacy fields for backward compatibility
+    // Legacy fields
     session.reflectionScore = finalScore;
     session.reflectionColor = color;
     session.reflectionReasons = (evalRes.reasons || []).slice(0, 5);
@@ -108,7 +96,7 @@ export async function POST() {
     session.submittedAt = new Date();
     await session.save();
 
-    // 5) Update Team.status with new data
+    // 5) Update Team status
     await Team.updateOne(
       { teamId },
       {
@@ -124,41 +112,20 @@ export async function POST() {
       }
     );
 
-    // 6) Extract tasks from final summary for student display
-    // Try to extract the tasks section from the markdown summary
-    let studentTasks: string[] = [];
+    // 6) Extract tasks for student display
+    let studentTasks = extractTasksFromSummary(finalSummary);
 
-    // Try to extract tasks from the summary markdown
-    const tasksMatch = finalSummary.match(/##.*משימות.*\n([\s\S]*?)(?=\n---|\n##|$)/i);
-    if (tasksMatch) {
-      const tasksSection = tasksMatch[1];
-      // Extract task items (lines starting with number, *, -, or ###)
-      const taskLines = tasksSection
-        .split("\n")
-        .filter((line) => /^(\d+[\.\)]|\*|-|###)\s/.test(line.trim()))
-        .map((line) => line.replace(/^(\d+[\.\)]|\*|-|###)\s*\**/, "").trim())
-        .filter((line) => line.length > 5 && !line.startsWith("מה לעשות") && !line.startsWith("מי אחראי") && !line.startsWith("עד מתי"));
-
-      studentTasks = taskLines.slice(0, 3);
-    }
-
-    // Fallback to recommendations if no tasks found in summary
+    // Fallback to recommendations if no tasks found
     if (studentTasks.length === 0 && evalRes.recommendations && evalRes.recommendations.length > 0) {
       studentTasks = evalRes.recommendations.slice(0, 3);
     }
 
-    return NextResponse.json({
-      ok: true,
+    return successResponse({
       submissionId: String(session._id),
       teamHealthScore: evalRes.teamHealthScore,
       tuckmanStage: evalRes.tuckmanStage,
-      // Tasks for student display
       tasks: studentTasks,
-      // Additional feedback for student
       strengths: (evalRes.strengths || []).slice(0, 2),
     });
-  } catch (err: any) {
-    console.error("reflection/confirm error:", err);
-    return jsonError(500, "Internal Server Error", err?.message || "Unknown");
-  }
+  });
 }

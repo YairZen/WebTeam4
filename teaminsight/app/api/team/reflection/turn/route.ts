@@ -1,45 +1,48 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+/**
+ * Reflection Turn API Route
+ * -------------------------
+ * POST /api/team/reflection/turn - Submit a user response in the reflection
+ */
 
+import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { verifyTeamSession } from "@/lib/teamSession";
-
+import { successResponse, ApiErrors, withErrorHandler, requireTeamAuth } from "@/lib/api";
+import { getRecentSummaries } from "@/lib/api/reflection";
 import ReflectionChatSession from "@/models/ReflectionChatSession";
 import { runReflectionController, runReflectionInterviewer } from "@/lib/ai/gemini";
 import { getEffectiveReflectionPolicy } from "@/lib/reflection/policy";
+import { REFLECTION } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
 type TurnBody = { text: string };
 
-function jsonError(status: number, error: string, details?: string) {
-  return NextResponse.json({ error, ...(details ? { details } : {}) }, { status });
-}
-
-export async function POST(req: Request) {
-  try {
-    await connectDB();
-
-    const cookieStore = await cookies();
-    const token = cookieStore.get("team_session")?.value;
-
-    const payload = token ? verifyTeamSession(token) : null;
-    const teamId = payload?.teamId;
-    if (!teamId) {
-      return jsonError(401, "Unauthorized", "Missing/invalid team_session cookie or payload.teamId");
+export async function POST(req: NextRequest) {
+  return withErrorHandler(async () => {
+    const authResult = await requireTeamAuth();
+    if ("error" in authResult) {
+      return authResult.error;
     }
+
+    const { teamId } = authResult;
+    await connectDB();
 
     const body = (await req.json().catch(() => null)) as TurnBody | null;
     const userText = (body?.text || "").trim();
-    if (!userText) return jsonError(400, "Missing text");
+    if (!userText) {
+      return ApiErrors.badRequest("Missing text");
+    }
 
     const session = await ReflectionChatSession.findOne({ teamId, status: "in_progress" });
     if (!session) {
       const ready = await ReflectionChatSession.findOne({ teamId, status: "ready_to_submit" }).select({ _id: 1 });
       if (ready) {
-        return jsonError(409, "Reflection is ready to submit", "Use /confirm to submit or /reset to start over.");
+        return ApiErrors.conflict(
+          "Reflection is ready to submit",
+          "Use /confirm to submit or /reset to start over."
+        );
       }
-      return jsonError(409, "No active reflection session. Call /start first.");
+      return ApiErrors.conflict("No active reflection session. Call /start first.");
     }
 
     session.messages.push({ role: "user", text: userText });
@@ -52,20 +55,7 @@ export async function POST(req: Request) {
       session.weeklyInstructionsSnapshot = session.weeklyInstructionsSnapshot || effective.weeklyInstructions || "";
     }
 
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-    const recentSubmitted = await ReflectionChatSession.find({
-      teamId,
-      status: "submitted",
-      updatedAt: { $gte: fourteenDaysAgo },
-    })
-      .sort({ updatedAt: -1 })
-      .limit(3)
-      .select({ aiSummary: 1 })
-      .lean();
-
-    const recentSummaries = recentSubmitted
-      .map((r: any) => r?.aiSummary)
-      .filter((s: any) => typeof s === "string" && s.trim().length > 0);
+    const recentSummaries = await getRecentSummaries(teamId);
 
     const effective = await getEffectiveReflectionPolicy();
     const policy = {
@@ -83,7 +73,7 @@ export async function POST(req: Request) {
       runningSummary: session.aiSummary || "",
       clarifyCount: session.clarifyCount || 0,
       turnCount: session.currentIndex || 0,
-      maxTurns: 16,
+      maxTurns: REFLECTION.MAX_TURNS,
       recentSummaries,
       policy,
     });
@@ -109,15 +99,11 @@ export async function POST(req: Request) {
     session.messages.push({ role: "model", text: assistantText });
     await session.save();
 
-    return NextResponse.json({
-      ok: true,
+    return successResponse({
       assistantText,
       readyToSubmit: controller.readyToSubmit === true,
       status: session.status,
       runningSummary: "",
     });
-  } catch (err: any) {
-    console.error("reflection/turn error:", err);
-    return jsonError(500, "Internal Server Error", err?.message || "Unknown");
-  }
+  });
 }

@@ -4,34 +4,32 @@
   Lecturer – Teams History Page
   =============================
   Course-aligned implementation
+  Refactored to use shared UI components
 */
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { StatusBadge, KpiCard, BackLink, LoadingState } from "@/components/ui";
+import type { TeamStatus } from "@/lib/types";
+import { STATUS_RANK } from "@/lib/constants";
 
 type Team = {
   teamId: string;
   projectName: string;
-  status: "green" | "yellow" | "red";
+  status: TeamStatus;
 };
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | Team["status"]>("all")
+  const [statusFilter, setStatusFilter] = useState<"all" | TeamStatus>("all");
 
   type SortKey = "teamId" | "projectName" | "status";
   type SortDir = "asc" | "desc";
 
   const [sortKey, setSortKey] = useState<SortKey>("teamId");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-
-  const statusRank: Record<Team["status"], number> = {
-    red: 0,
-    yellow: 1,
-    green: 2,
-  };
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -49,7 +47,6 @@ export default function TeamsPage() {
       let cmp = 0;
 
       if (sortKey === "teamId") {
-
         const aNum = Number(a.teamId);
         const bNum = Number(b.teamId);
 
@@ -65,7 +62,7 @@ export default function TeamsPage() {
       }
 
       if (sortKey === "status") {
-        cmp = statusRank[a.status] - statusRank[b.status];
+        cmp = STATUS_RANK[a.status] - STATUS_RANK[b.status];
       }
 
       return sortDir === "asc" ? cmp : -cmp;
@@ -100,8 +97,7 @@ export default function TeamsPage() {
         t.teamId.toLowerCase().includes(q) ||
         t.projectName.toLowerCase().includes(q);
 
-      const matchesStatus =
-        statusFilter === "all" || t.status === statusFilter;
+      const matchesStatus = statusFilter === "all" || t.status === statusFilter;
 
       return matchesQuery && matchesStatus;
     });
@@ -119,21 +115,16 @@ export default function TeamsPage() {
             </p>
           </div>
 
-          <Link
-            href="/lecturer/dashboard"
-            className="text-purple-600 hover:text-purple-700 hover:underline text-sm whitespace-nowrap font-medium"
-          >
-            ← Back to Dashboard
-          </Link>
+          <BackLink href="/lecturer/dashboard" label="Back to Dashboard" />
         </div>
 
         {loading ? (
-          <div className="text-gray-600">Loading teams...</div>
+          <LoadingState message="Loading teams..." />
         ) : (
           <div className="w-full space-y-6">
-            {/* KPI Cards */}
+            {/* KPI Cards - using shared component */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <KpiCard title="Total Teams" value={kpi.total} />
+              <KpiCard title="Total Teams" value={kpi.total} tone="neutral" />
               <KpiCard title="Green" value={kpi.green} tone="green" />
               <KpiCard title="Yellow" value={kpi.yellow} tone="yellow" />
               <KpiCard title="Red" value={kpi.red} tone="red" />
@@ -154,7 +145,7 @@ export default function TeamsPage() {
                 <span className="text-sm text-gray-600">Status:</span>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  onChange={(e) => setStatusFilter(e.target.value as "all" | TeamStatus)}
                   className="border rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-400"
                 >
                   <option value="all">All</option>
@@ -248,86 +239,3 @@ export default function TeamsPage() {
     </main>
   );
 }
-
-function StatusBadge({ status }: { status: Team["status"] }) {
-  const config = {
-    green: {
-      dot: "bg-green-500",
-      text: "OK",
-      textColor: "text-green-700",
-      bg: "bg-green-50",
-    },
-    yellow: {
-      dot: "bg-yellow-400",
-      text: "Warning",
-      textColor: "text-yellow-700",
-      bg: "bg-yellow-50",
-    },
-    red: {
-      dot: "bg-red-500",
-      text: "Risk",
-      textColor: "text-red-700",
-      bg: "bg-red-50",
-    },
-  }[status];
-
-  return (
-    <div
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${config.bg} ${config.textColor}`}
-    >
-      <span className={`w-2.5 h-2.5 rounded-full ${config.dot}`} />
-      {config.text}
-    </div>
-  );
-}
-
-function KpiCard({
-  title,
-  value,
-  tone = "neutral",
-}: {
-  title: string;
-  value: number;
-  tone?: "neutral" | "green" | "yellow" | "red";
-}) {
-  const styles = {
-    neutral: {
-      bg: "bg-white",
-      border: "border-l-4 border-gray-400",
-      value: "text-gray-900",
-      title: "text-gray-600",
-    },
-    green: {
-      bg: "bg-green-50",
-      border: "border-l-4 border-green-500",
-      value: "text-green-700",
-      title: "text-green-700",
-    },
-    yellow: {
-      bg: "bg-yellow-50",
-      border: "border-l-4 border-yellow-500",
-      value: "text-yellow-700",
-      title: "text-yellow-700",
-    },
-    red: {
-      bg: "bg-red-50",
-      border: "border-l-4 border-red-500",
-      value: "text-red-700",
-      title: "text-red-700",
-    },
-  }[tone];
-
-  return (
-    <div
-      className={`rounded-xl shadow-lg ${styles.border} ${styles.bg} p-4`}
-    >
-      <div className={`text-sm font-medium ${styles.title}`}>
-        {title}
-      </div>
-      <div className={`text-3xl font-bold mt-1 ${styles.value}`}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
