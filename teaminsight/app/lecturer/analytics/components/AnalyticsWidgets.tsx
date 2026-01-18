@@ -1,41 +1,49 @@
 "use client";
 
-import { AlertTriangle, Clock, FileText, Activity, Users, CheckCircle } from "lucide-react";
+import { AlertTriangle, Clock, MessageCircle, Activity, Users, CheckCircle } from "lucide-react"; 
 import { Team, QualityData, AlertItem } from "../types";
 
-/* --- 1. KPI Cards (Words & Time Only) --- */
+/* --- 1. KPI Cards (Messages replacing Words) --- */
 export function KpiStats({ qualityData }: { qualityData: QualityData[] }) {
-  let totalWordsAll = 0;
+  // Variables to aggregate data
+  let totalMessagesAll = 0;
   let totalDurationAll = 0;
   let totalSessionsAll = 0;
 
   qualityData.forEach((d) => {
     if (d.sessionCount > 0) {
-      totalWordsAll += d.avgWords * d.sessionCount;
+      // Summing up messages instead of words
+      // (Using || 0 as a fallback if the field is undefined)
+      totalMessagesAll += (d.avgMessages || 0) * d.sessionCount;
       totalDurationAll += d.avgDuration * d.sessionCount;
       totalSessionsAll += d.sessionCount;
     }
   });
 
-  const globalAvgWords = totalSessionsAll > 0 ? Math.round(totalWordsAll / totalSessionsAll) : 0;
+  // Calculate global averages
+  const globalAvgMessages = totalSessionsAll > 0 ? Math.round(totalMessagesAll / totalSessionsAll) : 0;
 
-
+  // Calculate average time in minutes (assuming duration is in seconds)
   const globalAvgTimeSeconds = totalSessionsAll > 0 ? (totalDurationAll / totalSessionsAll) : 0;
   const globalAvgTimeMinutes = Math.round(globalAvgTimeSeconds / 60);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 w-full">
+      
+      {/* Card 1: Messages (Replaces the Words card) */}
       <StatCard 
-        icon={<FileText className="text-blue-600" size={24} />} 
-        label="Avg. Words per Session" 
-        value={globalAvgWords.toLocaleString()} 
-        subtext="Depth of reflection"
+        icon={<MessageCircle className="text-blue-600" size={24} />} 
+        label="Avg. Messages per Session" 
+        value={globalAvgMessages.toLocaleString()} 
+        subtext="Interaction volume"
         color="bg-blue-50 border-blue-100"
       />
+
+      {/* Card 2: Time (Unchanged) */}
       <StatCard 
         icon={<Clock className="text-purple-600" size={24} />} 
         label="Avg. Time per Session" 
-        value={`${globalAvgTimeMinutes} min`}  // <-- התיקון כאן
+        value={`${globalAvgTimeMinutes} min`} 
         subtext="Engagement duration"
         color="bg-purple-50 border-purple-100"
       />
@@ -56,8 +64,9 @@ function StatCard({ icon, label, value, subtext, color }: any) {
   );
 }
 
-/* --- 2. Critical Attention List (Red & Yellow) --- */
+/* --- 2. Critical Attention List --- */
 export function CriticalTeamsList({ teams, alerts }: { teams: Team[], alerts: AlertItem[] }) {
+  // Filter teams that have a red or yellow status
   const attentionTeams = teams.filter(t => t.status === "red" || t.status === "yellow");
 
   return (
@@ -91,9 +100,10 @@ export function CriticalTeamsList({ teams, alerts }: { teams: Team[], alerts: Al
   );
 }
 
-/* --- 3. Teams Chat Status List (Top 5 Mixed) --- */
+/* --- 3. Teams Chat Status List --- */
 export function TeamsChatStatusList({ teams, qualityData }: { teams: Team[], qualityData: QualityData[] }) {
   
+  // Merge team data with quality data to get status and last activity
   const rows = teams.map(team => {
     const chatData = qualityData.find(q => q.teamId === team.teamId);
     return {
@@ -103,6 +113,7 @@ export function TeamsChatStatusList({ teams, qualityData }: { teams: Team[], qua
     };
   });
 
+  // Sort by status priority (Live > Submitted > Not Started), then by activity time
   rows.sort((a, b) => {
      const getScore = (status: string | null) => {
          if (status === 'in_progress') return 3; 
