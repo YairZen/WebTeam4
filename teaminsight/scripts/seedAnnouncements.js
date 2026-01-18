@@ -1,12 +1,16 @@
 /**
  * Seed script to populate the database with sample announcements
  * Run with: node scripts/seedAnnouncements.js
+ *
+ * This script:
+ * 1. Deletes ALL existing announcements
+ * 2. Adds 10 new announcements starting from 26.10.25, each Sunday
  */
 
 const mongoose = require('mongoose');
 require('dotenv').config({ path: '.env.local' });
 
-// Announcement Schema
+// Announcement Schema (without automatic timestamps - we set them manually)
 const AnnouncementSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -19,15 +23,36 @@ const AnnouncementSchema = new mongoose.Schema({
   targetTeams: {
     type: mongoose.Schema.Types.Mixed,
     required: true
+  },
+  createdAt: {
+    type: Date,
+    required: true
+  },
+  updatedAt: {
+    type: Date,
+    required: true
   }
-}, {
-  timestamps: true
 });
 
 const Announcement = mongoose.models.Announcement || mongoose.model('Announcement', AnnouncementSchema);
 
+// Helper function to get Sunday dates starting from 26.10.2025
+function getSundayDates(startDate, count) {
+  const dates = [];
+  const current = new Date(startDate);
+
+  for (let i = 0; i < count; i++) {
+    const date = new Date(current);
+    date.setHours(9, 0, 0, 0); // Set time to 09:00:00
+    dates.push(date);
+    current.setDate(current.getDate() + 7); // Add 7 days for next Sunday
+  }
+
+  return dates;
+}
+
 // 10 Sample Announcements for IoT Course - Industrial Engineering and Management
-const sampleAnnouncements = [
+const announcementData = [
   {
     title: "ברוכים הבאים לקורס IoT",
     body: "שלום לכולם וברוכים הבאים לקורס האינטרנט של הדברים בהנדסת תעשייה וניהול! במהלך הסמסטר נלמד לתכנן, לפתח ולנהל מערכות IoT תעשייתיות. נעבוד עם חיישנים, בקרים ופלטפורמות ענן לניטור תהליכי ייצור.",
@@ -93,18 +118,40 @@ async function seedAnnouncements() {
     await mongoose.connect(uri);
     console.log('✅ Connected to MongoDB');
 
-    // Check existing announcements
+    // Delete all existing announcements
     const existingCount = await Announcement.countDocuments();
-    console.log(`📊 Current announcements count: ${existingCount}`);
+    console.log(`📊 Found ${existingCount} existing announcements`);
 
-    // Insert sample announcements
-    console.log('📝 Inserting sample announcements...');
-    const result = await Announcement.insertMany(sampleAnnouncements);
+    console.log('🗑️  Deleting all existing announcements...');
+    await Announcement.deleteMany({});
+    console.log('✅ All existing announcements deleted');
+
+    // Generate Sunday dates starting from 26.10.2025
+    // October 26, 2025 is a Sunday
+    const startDate = new Date('2025-10-26T09:00:00.000Z');
+    const sundayDates = getSundayDates(startDate, announcementData.length);
+
+    // Create announcements with custom dates
+    const announcementsWithDates = announcementData.map((announcement, index) => ({
+      ...announcement,
+      createdAt: sundayDates[index],
+      updatedAt: sundayDates[index]
+    }));
+
+    // Display dates for verification
+    console.log('\n📅 Announcement dates:');
+    sundayDates.forEach((date, index) => {
+      console.log(`   ${index + 1}. ${date.toLocaleDateString('he-IL')} (${date.toLocaleDateString('en-US', { weekday: 'long' })})`);
+    });
+
+    // Insert announcements
+    console.log('\n📝 Inserting sample announcements...');
+    const result = await Announcement.insertMany(announcementsWithDates);
     console.log(`✅ Successfully inserted ${result.length} announcements`);
 
     // Show summary
     const newCount = await Announcement.countDocuments();
-    console.log(`📊 Total announcements now: ${newCount}`);
+    console.log(`\n📊 Total announcements now: ${newCount}`);
 
     await mongoose.connection.close();
     console.log('🔒 Database connection closed');
