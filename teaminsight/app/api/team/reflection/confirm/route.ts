@@ -16,7 +16,8 @@ function jsonError(status: number, error: string, details?: string) {
   return NextResponse.json({ error, ...(details ? { details } : {}) }, { status });
 }
 
-function computeScore(evalRes: { quality: number; risk: number; compliance: number }) {
+// Legacy score computation for backward compatibility
+function computeLegacyScore(evalRes: { quality: number; risk: number; compliance: number }) {
   const score =
     (evalRes.quality * 0.45 + (10 - evalRes.risk) * 0.4 + evalRes.compliance * 0.15) * 10;
   return Math.round(Math.max(0, Math.min(100, score)));
@@ -60,25 +61,43 @@ export async function POST() {
     const finalSummary = await runReflectionFinalSummary({
       answers: session.answers,
       runningSummary: session.aiSummary || "",
+      messages: session.messages,
     });
 
-    // 2) Evaluation
+    // 2) Evaluation with new THS algorithm
     const evalRes = await runReflectionEvaluation({
       summary: finalSummary,
       answers: session.answers,
+      messages: session.messages,
       policy: {
         profile: { key: profile.key, evaluatorAddendum: profile.evaluatorAddendum || "" },
         weeklyInstructions: session.weeklyInstructionsSnapshot || "",
       },
     });
 
-    // 3) Score + color
-    const score = computeScore(evalRes);
-    const color = scoreToColor(score, Number(profile.greenMin ?? 75), Number(profile.redMax ?? 45));
+    // 3) Use THS score if available, otherwise compute legacy score
+    const thsScore = evalRes.teamHealthScore || 0;
+    const legacyScore = computeLegacyScore(evalRes);
+    const finalScore = thsScore > 0 ? thsScore : legacyScore;
+    const color = scoreToColor(finalScore, Number(profile.greenMin ?? 75), Number(profile.redMax ?? 45));
 
-    // 4) Save on session
+    // 4) Save all new THS data on session
     session.aiSummary = finalSummary;
-    session.reflectionScore = score;
+
+    // New THS fields
+    session.teamHealthScore = evalRes.teamHealthScore;
+    session.thsComponents = evalRes.components;
+    session.tuckmanStage = evalRes.tuckmanStage;
+    session.tuckmanExplanation = evalRes.tuckmanExplanation || "";
+    session.riskLevel = evalRes.riskLevel;
+    session.riskExplanation = evalRes.riskExplanation || "";
+    session.anomalyFlags = evalRes.anomalyFlags || [];
+    session.strengths = evalRes.strengths || [];
+    session.concerns = evalRes.concerns || [];
+    session.recommendations = evalRes.recommendations || [];
+
+    // Legacy fields for backward compatibility
+    session.reflectionScore = finalScore;
     session.reflectionColor = color;
     session.reflectionReasons = (evalRes.reasons || []).slice(0, 5);
     session.qualityBreakdown = evalRes.qualityBreakdown || "";
@@ -89,19 +108,28 @@ export async function POST() {
     session.submittedAt = new Date();
     await session.save();
 
-    // 5) Update Team.status
+    // 5) Update Team.status with new data
     await Team.updateOne(
       { teamId },
       {
         $set: {
           status: color,
-          reflectionScore: score,
+          reflectionScore: finalScore,
+          teamHealthScore: evalRes.teamHealthScore,
+          tuckmanStage: evalRes.tuckmanStage,
+          riskLevel: evalRes.riskLevel,
+          anomalyFlags: evalRes.anomalyFlags || [],
           reflectionUpdatedAt: new Date(),
         },
       }
     );
 
-    return NextResponse.json({ ok: true, submissionId: String(session._id) });
+    return NextResponse.json({
+      ok: true,
+      submissionId: String(session._id),
+      teamHealthScore: evalRes.teamHealthScore,
+      tuckmanStage: evalRes.tuckmanStage,
+    });
   } catch (err: any) {
     console.error("reflection/confirm error:", err);
     return jsonError(500, "Internal Server Error", err?.message || "Unknown");
