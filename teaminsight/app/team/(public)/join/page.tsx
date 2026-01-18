@@ -54,8 +54,12 @@ export default function TeamLoginPage() {
 
       if (!res.ok) {
         setErrorMsg(data?.error || "Invalid credentials or server error.");
+        setLoading(false);
         return;
       }
+
+      // Debug: check if we reach here
+      console.log("Login successful, redirecting to /team...", data);
 
       // Use window.location for more reliable redirect after setting cookie
       window.location.href = "/team";
