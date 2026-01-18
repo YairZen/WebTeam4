@@ -19,7 +19,7 @@ export function KpiStats({ qualityData }: { qualityData: QualityData[] }) {
 
   const globalAvgWords = totalSessionsAll > 0 ? Math.round(totalWordsAll / totalSessionsAll) : 0;
 
-  // חישוב ממוצע הזמן (דקות)
+
   const globalAvgTimeSeconds = totalSessionsAll > 0 ? (totalDurationAll / totalSessionsAll) : 0;
   const globalAvgTimeMinutes = Math.round(globalAvgTimeSeconds / 60);
 
