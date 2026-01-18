@@ -56,6 +56,7 @@ export type ControllerInput = {
 };
 
 export type ControllerResult = {
+  thinking: string;
   runningSummary: string;
   answers: ReflectionAnswer[];
   nextIntent: NextIntent;
@@ -102,6 +103,11 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
       .filter(Boolean);
 
     return {
+      thinking:
+        typeof (obj as any).thinking === "string"
+          ? (obj as any).thinking.trim()
+          : fallback.thinking,
+
       runningSummary:
         typeof (obj as any).runningSummary === "string"
           ? (obj as any).runningSummary.trim()
@@ -161,6 +167,7 @@ export async function runReflectionController(input: ControllerInput): Promise<C
   });
 
   const fallback: ControllerResult = {
+    thinking: "Starting a new reflection conversation. Need to understand how the team collaborated this week.",
     runningSummary: input.runningSummary || "",
     answers: input.answers || [],
     nextIntent: {
