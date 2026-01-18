@@ -182,15 +182,11 @@ export default function ReflectionChat() {
         setTeamHealthScore(data.teamHealthScore);
       }
 
-      // Build completion message
+      // Build completion message (without showing scores to students)
       let completionMsg = "הוגש בהצלחה ✅\n\n";
 
-      if (data.teamHealthScore) {
-        completionMsg += `ציון בריאות הצוות: ${data.teamHealthScore}/100\n\n`;
-      }
-
       if (data.strengths && data.strengths.length > 0) {
-        completionMsg += "💪 חוזקות שזיהינו:\n";
+        completionMsg += "💪 נקודות חוזק שזיהינו בצוות:\n";
         data.strengths.forEach((s: string) => {
           completionMsg += `• ${s}\n`;
         });
@@ -198,7 +194,7 @@ export default function ReflectionChat() {
       }
 
       if (data.tasks && data.tasks.length > 0) {
-        completionMsg += "📋 משימות לשבוע הבא:\n";
+        completionMsg += "📋 משימות לשיפור לשבוע הבא:\n";
         data.tasks.forEach((task: string, i: number) => {
           completionMsg += `${i + 1}. ${task}\n`;
         });
