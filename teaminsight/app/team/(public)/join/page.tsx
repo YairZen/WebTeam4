@@ -56,10 +56,10 @@ export default function TeamLoginPage() {
         return;
       }
 
-      router.push("/team");
+      // Use window.location for more reliable redirect after setting cookie
+      window.location.href = "/team";
     } catch (err) {
       setErrorMsg("Network error. Please try again.");
-    } finally {
       setLoading(false);
     }
   }
