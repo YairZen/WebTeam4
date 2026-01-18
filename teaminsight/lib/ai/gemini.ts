@@ -25,7 +25,9 @@ export type NextIntent = {
   topicId: string | null;
   anchor: string;
   styleNote: string;
-  questions: string[];
+  questionGoal: string;
+  missingInfo: string[];
+  userContext: string;
 };
 
 export type ReflectionPolicy = {
@@ -91,15 +93,12 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
         ? kind
         : fallback.nextIntent.kind;
 
-    const questionsRaw = Array.isArray(ni.questions) ? ni.questions : [];
-    const questions = questionsRaw
+    // Parse missingInfo array
+    const missingInfoRaw = Array.isArray(ni.missingInfo) ? ni.missingInfo : [];
+    const missingInfo = missingInfoRaw
       .filter((q: any) => typeof q === "string")
       .map((q: string) => q.trim())
-      .filter(Boolean)
-      .slice(0, 2);
-
-    // Allow empty questions only for wrap_up
-    if (questions.length === 0 && validKind !== "wrap_up") return fallback;
+      .filter(Boolean);
 
     return {
       runningSummary:
@@ -114,7 +113,9 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
         topicId: typeof ni.topicId === "string" ? ni.topicId : null,
         anchor: typeof ni.anchor === "string" ? ni.anchor.trim() : fallback.nextIntent.anchor,
         styleNote: typeof ni.styleNote === "string" ? ni.styleNote.trim() : "",
-        questions,
+        questionGoal: typeof ni.questionGoal === "string" ? ni.questionGoal.trim() : "",
+        missingInfo,
+        userContext: typeof ni.userContext === "string" ? ni.userContext.trim() : "",
       },
 
       readyToSubmit: (obj as any).readyToSubmit === true,
@@ -164,8 +165,10 @@ export async function runReflectionController(input: ControllerInput): Promise<C
       kind: "advance_topic",
       topicId: "achievements",
       anchor: "יאללה נתחיל מהשבוע שלכם",
-      styleNote: "short open question",
-      questions: ["מה התוצר הכי משמעותי שהשלמתם השבוע?"],
+      styleNote: "friendly and curious",
+      questionGoal: "get concrete deliverables from this week",
+      missingInfo: ["feature name", "what was built", "evidence"],
+      userContext: "starting the conversation",
     },
     readyToSubmit: false,
     clarifyCount: input.clarifyCount || 0,
@@ -179,7 +182,11 @@ export async function runReflectionInterviewer(args: {
   messages: ChatMsg[];
   nextIntent: NextIntent;
 }): Promise<string> {
-  const payload = JSON.stringify(args);
+  // Include topics with questionHints so the interviewer can use them as inspiration
+  const payload = JSON.stringify({
+    ...args,
+    topics: REFLECTION_TOPICS,
+  });
 
   const response = await client.chat.completions.create({
     model: "qwen-3-235b-a22b-instruct-2507",
