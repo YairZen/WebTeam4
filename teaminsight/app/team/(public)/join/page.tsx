@@ -47,6 +47,7 @@ export default function TeamLoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teamId: tid, accessCode: code }),
+        credentials: "include",
       });
 
       const data = await res.json().catch(() => ({}));
