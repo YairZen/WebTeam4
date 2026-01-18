@@ -6,6 +6,8 @@ import ReflectionChatSession from "@/models/ReflectionChatSession";
    GET /api/teams/[teamId]/reflections/chat
    Lecturer read-only view of reflection sessions
    Optional query: ?sessionId=...
+
+   Updated to return full THS data for lecturer dashboard
    ========================= */
 export async function GET(req, context) {
   try {
@@ -20,8 +22,16 @@ export async function GET(req, context) {
     const sessionId = searchParams.get("sessionId");
 
     // 1) fetch list of sessions for dropdown (latest first)
+    // Include all THS fields for lecturer view
     const sessions = await ReflectionChatSession.find({ teamId })
-      .select("sessionId status createdAt updatedAt aiSummary currentIndex messages")
+      .select(`
+        sessionId status createdAt updatedAt aiSummary currentIndex messages
+        teamHealthScore thsComponents tuckmanStage tuckmanExplanation
+        riskLevel riskExplanation anomalyFlags
+        strengths concerns recommendations
+        reflectionScore reflectionColor reflectionReasons
+        qualityBreakdown riskBreakdown complianceBreakdown
+      `)
       .sort({ updatedAt: -1 })
       .lean();
 
@@ -50,6 +60,11 @@ export async function GET(req, context) {
       aiSummary: s.aiSummary || "",
       currentIndex: s.currentIndex ?? 0,
       messagesCount: Array.isArray(s.messages) ? s.messages.length : 0,
+      // Include THS score in list for quick overview
+      teamHealthScore: s.teamHealthScore,
+      reflectionScore: s.reflectionScore,
+      reflectionColor: s.reflectionColor,
+      tuckmanStage: s.tuckmanStage,
     }));
 
     return NextResponse.json(
@@ -64,6 +79,36 @@ export async function GET(req, context) {
           aiSummary: active.aiSummary || "",
           currentIndex: active.currentIndex ?? 0,
           messages: Array.isArray(active.messages) ? active.messages : [],
+
+          // ========================================
+          // TEAM HEALTH SCORE (THS) DATA
+          // ========================================
+          teamHealthScore: active.teamHealthScore,
+          thsComponents: active.thsComponents || null,
+
+          // Tuckman Stage
+          tuckmanStage: active.tuckmanStage,
+          tuckmanExplanation: active.tuckmanExplanation || "",
+
+          // Risk Assessment
+          riskLevel: active.riskLevel,
+          riskExplanation: active.riskExplanation || "",
+
+          // Anomaly Flags
+          anomalyFlags: active.anomalyFlags || [],
+
+          // Evaluation Insights
+          strengths: active.strengths || [],
+          concerns: active.concerns || [],
+          recommendations: active.recommendations || [],
+
+          // Legacy Fields
+          reflectionScore: active.reflectionScore,
+          reflectionColor: active.reflectionColor,
+          reflectionReasons: active.reflectionReasons || [],
+          qualityBreakdown: active.qualityBreakdown || "",
+          riskBreakdown: active.riskBreakdown || "",
+          complianceBreakdown: active.complianceBreakdown || "",
         },
       },
       { status: 200 }

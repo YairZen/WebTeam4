@@ -124,11 +124,38 @@ export async function POST() {
       }
     );
 
+    // 6) Extract tasks from final summary for student display
+    // Try to extract the tasks section from the markdown summary
+    let studentTasks: string[] = [];
+
+    // Try to extract tasks from the summary markdown
+    const tasksMatch = finalSummary.match(/##.*משימות.*\n([\s\S]*?)(?=\n---|\n##|$)/i);
+    if (tasksMatch) {
+      const tasksSection = tasksMatch[1];
+      // Extract task items (lines starting with number, *, -, or ###)
+      const taskLines = tasksSection
+        .split("\n")
+        .filter((line) => /^(\d+[\.\)]|\*|-|###)\s/.test(line.trim()))
+        .map((line) => line.replace(/^(\d+[\.\)]|\*|-|###)\s*\**/, "").trim())
+        .filter((line) => line.length > 5 && !line.startsWith("מה לעשות") && !line.startsWith("מי אחראי") && !line.startsWith("עד מתי"));
+
+      studentTasks = taskLines.slice(0, 3);
+    }
+
+    // Fallback to recommendations if no tasks found in summary
+    if (studentTasks.length === 0 && evalRes.recommendations && evalRes.recommendations.length > 0) {
+      studentTasks = evalRes.recommendations.slice(0, 3);
+    }
+
     return NextResponse.json({
       ok: true,
       submissionId: String(session._id),
       teamHealthScore: evalRes.teamHealthScore,
       tuckmanStage: evalRes.tuckmanStage,
+      // Tasks for student display
+      tasks: studentTasks,
+      // Additional feedback for student
+      strengths: (evalRes.strengths || []).slice(0, 2),
     });
   } catch (err: any) {
     console.error("reflection/confirm error:", err);

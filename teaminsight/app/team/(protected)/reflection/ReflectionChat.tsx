@@ -33,7 +33,14 @@ type TurnRes =
   | { error: string; details?: string };
 
 type ConfirmRes =
-  | { ok: true; submissionId: string }
+  | {
+      ok: true;
+      submissionId: string;
+      teamHealthScore?: number;
+      tuckmanStage?: string;
+      tasks?: string[];
+      strengths?: string[];
+    }
   | { error: string; details?: string };
 
 type ResetRes = { ok: true } | { error: string; details?: string };
@@ -52,6 +59,11 @@ export default function ReflectionChat() {
   >("unknown");
 
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Post-submission feedback
+  const [submissionTasks, setSubmissionTasks] = useState<string[]>([]);
+  const [submissionStrengths, setSubmissionStrengths] = useState<string[]>([]);
+  const [teamHealthScore, setTeamHealthScore] = useState<number | null>(null);
 
   const canSend = useMemo(() => {
     return input.trim().length > 0 && !loading && status === "in_progress";
@@ -158,7 +170,44 @@ export default function ReflectionChat() {
       }
 
       setStatus("submitted");
-      setMessages((prev) => [...prev, { role: "model", text: "הוגש בהצלחה ✅" }]);
+
+      // Store feedback data from server
+      if (data.tasks && data.tasks.length > 0) {
+        setSubmissionTasks(data.tasks);
+      }
+      if (data.strengths && data.strengths.length > 0) {
+        setSubmissionStrengths(data.strengths);
+      }
+      if (data.teamHealthScore) {
+        setTeamHealthScore(data.teamHealthScore);
+      }
+
+      // Build completion message
+      let completionMsg = "הוגש בהצלחה ✅\n\n";
+
+      if (data.teamHealthScore) {
+        completionMsg += `ציון בריאות הצוות: ${data.teamHealthScore}/100\n\n`;
+      }
+
+      if (data.strengths && data.strengths.length > 0) {
+        completionMsg += "💪 חוזקות שזיהינו:\n";
+        data.strengths.forEach((s: string) => {
+          completionMsg += `• ${s}\n`;
+        });
+        completionMsg += "\n";
+      }
+
+      if (data.tasks && data.tasks.length > 0) {
+        completionMsg += "📋 משימות לשבוע הבא:\n";
+        data.tasks.forEach((task: string, i: number) => {
+          completionMsg += `${i + 1}. ${task}\n`;
+        });
+        completionMsg += "\n";
+      }
+
+      completionMsg += "תודה על הרפלקציה! נתראה בשבוע הבא 🙌";
+
+      setMessages((prev) => [...prev, { role: "model", text: completionMsg }]);
     } catch (e: any) {
       setErrorMsg(e?.message || "Confirm failed");
     } finally {
