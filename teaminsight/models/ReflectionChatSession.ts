@@ -40,6 +40,11 @@ export type ReflectionChatSessionDoc = {
   reflectionColor: ReflectionColor | null;
   reflectionReasons: string[];
 
+  // Score breakdown for lecturer
+  qualityBreakdown: string;
+  riskBreakdown: string;
+  complianceBreakdown: string;
+
   // timestamp of when the reflection was submitted/confirmed
   submittedAt?: Date | null;
 
@@ -97,6 +102,11 @@ const ReflectionChatSessionSchema = new Schema<ReflectionChatSessionDoc>(
       index: true,
     },
     reflectionReasons: { type: [String], default: [] },
+
+    // Score breakdown for lecturer
+    qualityBreakdown: { type: String, default: "" },
+    riskBreakdown: { type: String, default: "" },
+    complianceBreakdown: { type: String, default: "" },
 
     // New field (replaces ReflectionSubmission.submittedAt)
     submittedAt: { type: Date, default: null, index: true },

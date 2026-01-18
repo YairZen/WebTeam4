@@ -81,6 +81,9 @@ export async function POST() {
     session.reflectionScore = score;
     session.reflectionColor = color;
     session.reflectionReasons = (evalRes.reasons || []).slice(0, 5);
+    session.qualityBreakdown = evalRes.qualityBreakdown || "";
+    session.riskBreakdown = evalRes.riskBreakdown || "";
+    session.complianceBreakdown = evalRes.complianceBreakdown || "";
 
     session.status = "submitted";
     session.submittedAt = new Date();

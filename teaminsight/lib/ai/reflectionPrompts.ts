@@ -50,6 +50,29 @@ If recentSummaries is not empty, USE IT to make the conversation more meaningful
 DO NOT ignore recentSummaries - they are crucial for meaningful reflection!
 ===============================================
 
+=== CRITICAL: EXTRACT AND STORE INFORMATION ===
+After EACH user message, you MUST:
+1) Parse what the user said and extract concrete information
+2) Update the "answers" array with extracted info for each topic covered
+3) Update "runningSummary" with a running summary of ALL information gathered
+
+The "answers" array should contain ACTUAL QUOTES and SPECIFIC DETAILS from the conversation.
+For example, if user says "דני עזר לי עם הקוד ועשינו פגישת סינכרון":
+- Add: { topicId: "collaboration", prompt: "עזרה הדדית", answer: "דני עזר עם הקוד" }
+- Add: { topicId: "communication", prompt: "פגישות", answer: "עשו פגישת סינכרון לפני העבודה" }
+
+The "runningSummary" should be a DETAILED Hebrew summary including:
+- Names mentioned (דני, שרה, etc.)
+- Specific events (פגישת סינכרון, בעיה בתיעוד GitHub, חגיגה בווטסאפ)
+- Emotions/feelings expressed (תסכול, שמחה, מוטיבציה)
+- Decisions made (קבענו פורמט להערות, חלוקת גזרות)
+- Conflicts and how they were resolved
+- Team dynamics observations
+
+DO NOT leave information behind! Extract EVERYTHING relevant from the conversation.
+If user mentions collaboration AND communication in same message, update BOTH topics.
+===============================================
+
 Goal:
 - Keep the chat natural and flowing (not a questionnaire).
 - Extract concrete, specific examples about TEAM DYNAMICS.
@@ -227,18 +250,41 @@ You MUST return JSON:
   "quality": number,     // 0..10 (depth of reflection + honesty + specific examples)
   "risk": number,        // 0..10 (team dysfunction risk: conflicts, low morale, poor communication)
   "compliance": number,  // 0..10 (how well it follows weekly instructions/focus)
+  "qualityBreakdown": string,   // Hebrew explanation of quality score
+  "riskBreakdown": string,      // Hebrew explanation of risk score
+  "complianceBreakdown": string, // Hebrew explanation of compliance score
   "reasons": string[]    // 2..5 short bullets (Hebrew)
 }
 
 Evaluation criteria for TEAM DYNAMICS:
-- Quality: Did they share specific examples? Were they honest about difficulties? Did they reflect deeply?
-- Risk: Are there unresolved conflicts? Poor communication? Unfair work distribution? Low morale?
-- Look for warning signs: one person doing all work, avoiding conflict discussion, generic answers
+
+QUALITY (0-10):
+- 9-10: דוגמאות ספציפיות מרובות, שמות, אירועים, רגשות, כנות לגבי קשיים
+- 7-8: דוגמאות טובות אך חסרים פרטים מסוימים
+- 5-6: תשובות כלליות עם מעט דוגמאות ספציפיות
+- 3-4: תשובות שטחיות, מעט מאוד פרטים
+- 0-2: תשובות גנריות לחלוטין, אין דוגמאות
+
+RISK (0-10) - Higher = More Risk:
+- 0-2: צוות בריא, תקשורת טובה, אווירה חיובית
+- 3-4: בעיות קטנות שנפתרו, צוות מתפקד
+- 5-6: בעיות שדורשות תשומת לב, חיכוכים קלים
+- 7-8: בעיות משמעותיות: קונפליקטים לא פתורים, מורל נמוך, תקשורת לקויה
+- 9-10: צוות בסיכון: קונפליקטים חמורים, אדם אחד עושה הכל, התפרקות
+
+COMPLIANCE (0-10):
+- Based on weeklyInstructions if provided
+- If no instructions: general team health best practices
+
+The "qualityBreakdown" should explain: "איכות X/10 כי: [הסבר קצר]"
+The "riskBreakdown" should explain: "סיכון X/10 כי: [הסבר קצר]"
+The "complianceBreakdown" should explain: "עמידה בהנחיות X/10 כי: [הסבר קצר]"
 
 Rules:
 - Follow policy.profile.evaluatorAddendum.
 - If weeklyInstructions is empty => compliance should reflect general team health best practices.
 - No inventions. Base only on provided summary/answers.
+- Be specific in breakdowns - reference actual content from the reflection.
 `;
 
 export const REFLECTION_FINAL_SUMMARY_PROMPT = `
@@ -249,39 +295,79 @@ Tone: warm, constructive, supportive.
 
 Input:
 - answers (topicId/prompt/answer)
-- runningSummary
+- runningSummary (THIS CONTAINS THE MOST DETAILED INFO - USE IT!)
+
+IMPORTANT: The runningSummary contains ALL the details from the conversation.
+Extract specific names, events, quotes, and details from it.
+DO NOT write "חסר מידע" if the information exists in runningSummary!
 
 Output format (use headings + bullets):
-כותרת: רפלקציה שבועית — סיכום תפקוד הצוות
 
-1) שיתוף פעולה
-- מה עבד טוב בעבודה המשותפת
-- דוגמאות לעזרה הדדית
+# רפלקציה שבועית — סיכום תפקוד הצוות
 
-2) תקשורת בצוות
-- איך התקשרו השבוע
-- מה עבד / מה צריך שיפור
+## 1) שיתוף פעולה
+- מה עבד טוב: [פרט עם שמות ודוגמאות ספציפיות]
+- דוגמאות לעזרה הדדית: [ציין מי עזר למי ובמה]
 
-3) חלוקת עבודה ותפקידים
-- האם החלוקה הייתה הוגנת
-- בהירות התפקידים
+## 2) תקשורת בצוות
+- כלי תקשורת: [וואטסאפ, פגישות, וידאו וכו']
+- מה עבד טוב: [פרט]
+- מה צריך שיפור: [פרט]
 
-4) אתגרים וחיכוכים
-- קשיים שעלו
-- איך התמודדו איתם
+## 3) חלוקת עבודה ותפקידים
+- איך חולקה העבודה: [פרט מי עשה מה]
+- בהירות התפקידים: [האם ברור? מה לא ברור?]
 
-5) קבלת החלטות
-- איך הצוות מחליט
-- האם כולם מרגישים שנשמעים
+## 4) אתגרים וחיכוכים
+- אתגרים שעלו: [פרט את הבעיות הספציפיות]
+- איך נפתרו: [תאר את הפתרון]
 
-6) אווירה ומוטיבציה
-- מצב הרוח בצוות
-- מה משפיע על המוטיבציה
+## 5) קבלת החלטות
+- תהליך קבלת החלטות: [דמוקרטי? מי מוביל?]
+- דוגמה להחלטה שהתקבלה: [פרט]
 
-7) לקחים ושיפורים
-- מה למדו על עצמם כצוות
-- מה ישפרו בשבוע הבא
+## 6) אווירה ומוטיבציה
+- מצב הרוח: [חיובי/שלילי + הסבר]
+- מה השפיע על המוטיבציה: [אירועים ספציפיים]
+- רגעי חגיגה: [אם היו]
 
-No inventions. If something is missing, note it briefly.
+## 7) לקחים ושיפורים
+- מה למדו על עצמם כצוות: [פרט]
+- החלטות לשיפור: [מה יעשו אחרת]
+
+---
+
+## 📋 משימות לשיפור הדינמיקה הקבוצתית (לשבוע הבא)
+
+בהתבסס על הרפלקציה, הנה 3 משימות קונקרטיות לשיפור עבודת הצוות:
+
+1) **משימה ראשונה**: [משימה ספציפית וקלה ליישום]
+   - מה לעשות: [פעולה ברורה]
+   - מי אחראי: [כל הצוות / אדם ספציפי]
+   - עד מתי: [תאריך/יום]
+
+2) **משימה שנייה**: [משימה ספציפית]
+   - מה לעשות: [פעולה ברורה]
+   - מי אחראי: [כל הצוות / אדם ספציפי]
+   - עד מתי: [תאריך/יום]
+
+3) **משימה שלישית**: [משימה ספציפית]
+   - מה לעשות: [פעולה ברורה]
+   - מי אחראי: [כל הצוות / אדם ספציפי]
+   - עד מתי: [תאריך/יום]
+
+דוגמאות למשימות טובות:
+- "לקיים פגישת סינכרון של 10 דקות בתחילת כל יום עבודה"
+- "לפתוח קבוצת וואטסאפ ייעודית לעדכונים טכניים"
+- "כל אחד יכתוב הערה אחת על הקוד של חבר אחר השבוע"
+- "לקיים שיחה 1:1 בין X ל-Y לשיפור התקשורת"
+- "לחגוג כל הישג קטן בקבוצה עם הודעה משותפת"
+
+המשימות צריכות להיות:
+- קונקרטיות (לא "לשפר תקשורת" אלא "לשלוח עדכון יומי בוואטסאפ")
+- קלות ליישום (לא לוקחות יותר מ-15 דקות)
+- רלוונטיות לבעיות שעלו בשיחה
+
+No inventions. Base everything on the actual conversation content.
 Be constructive and encouraging in tone.
 `;

@@ -230,6 +230,9 @@ export type ReflectionEval = {
   quality: number; // 0..10
   risk: number; // 0..10 (higher = worse)
   compliance: number; // 0..10
+  qualityBreakdown: string; // Hebrew explanation of quality score
+  riskBreakdown: string; // Hebrew explanation of risk score
+  complianceBreakdown: string; // Hebrew explanation of compliance score
   reasons: string[]; // short bullets in Hebrew
 };
 
@@ -273,6 +276,9 @@ export async function runReflectionEvaluation(input: {
       quality: clamp0to10(obj?.quality),
       risk: clamp0to10(obj?.risk),
       compliance: clamp0to10(obj?.compliance),
+      qualityBreakdown: typeof obj?.qualityBreakdown === "string" ? obj.qualityBreakdown.trim() : "לא סופק פירוט לציון האיכות.",
+      riskBreakdown: typeof obj?.riskBreakdown === "string" ? obj.riskBreakdown.trim() : "לא סופק פירוט לציון הסיכון.",
+      complianceBreakdown: typeof obj?.complianceBreakdown === "string" ? obj.complianceBreakdown.trim() : "לא סופק פירוט לציון ההיענות.",
       reasons: reasons.length > 0 ? reasons : ["לא נמצאו סיבות מפורטות — ניתוח בסיסי בוצע."],
     };
   } catch {
@@ -280,6 +286,9 @@ export async function runReflectionEvaluation(input: {
       quality: 5,
       risk: 5,
       compliance: 5,
+      qualityBreakdown: "לא הצלחתי לנתח — ברירת מחדל.",
+      riskBreakdown: "לא הצלחתי לנתח — ברירת מחדל.",
+      complianceBreakdown: "לא הצלחתי לנתח — ברירת מחדל.",
       reasons: ["לא הצלחתי לנתח בוודאות — הוחזר סיווג ברירת מחדל."],
     };
   }
