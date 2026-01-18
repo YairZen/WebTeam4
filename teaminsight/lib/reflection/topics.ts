@@ -7,87 +7,87 @@ export type ReflectionTopic = {
 
 export const REFLECTION_TOPICS: ReflectionTopic[] = [
   {
-    id: "achievements",
-    title: "הישגים ותוצרים",
-    guidance: "Concrete deliverables: feature/PR/demo/fix/deploy. Include what was built and evidence.",
+    id: "collaboration",
+    title: "שיתוף פעולה בצוות",
+    guidance: "How well did the team collaborate this week? Look for concrete examples of teamwork, helping each other, pair work, knowledge sharing.",
     questionHints: [
-      "מה הספקתם לסיים השבוע?",
-      "איזה פיצ'ר או תיקון יצא לפרודקשן?",
-      "יש משהו שאפשר לראות או להדגים?",
-      "מה התוצר הכי משמעותי מהשבוע?",
-      "איזה PR נסגר או קוד שעלה?"
+      "איך עבד שיתוף הפעולה בצוות השבוע?",
+      "היה מצב שמישהו עזר לאחר בצוות?",
+      "עבדתם ביחד על משהו או כל אחד לבד?",
+      "איך חילקתם את העבודה ביניכם?",
+      "היה רגע שהרגשתם שאתם באמת צוות?"
     ]
   },
   {
-    id: "wins",
-    title: "מה עבד טוב",
-    guidance: "What helped you succeed? Practices, communication, planning. Give one concrete example.",
+    id: "communication",
+    title: "תקשורת בצוות",
+    guidance: "Quality of team communication. Meetings, updates, responsiveness, clarity. What worked and what didn't in how they talked to each other.",
     questionHints: [
-      "מה עזר לכם להתקדם השבוע?",
-      "איזו שיטת עבודה הוכיחה את עצמה?",
-      "היה משהו בתקשורת בצוות שעבד טוב?",
-      "מה הייתם רוצים להמשיך לעשות?",
-      "איזה תהליך חסך לכם זמן או בעיות?"
+      "איך הייתה התקשורת בצוות השבוע?",
+      "כולם היו מעודכנים במה שקורה?",
+      "היו אי-הבנות או בלבולים?",
+      "איך העברתם מידע אחד לשני?",
+      "הפגישות שלכם היו יעילות?"
     ]
   },
   {
-    id: "pain_points",
-    title: "מה לא עבד",
-    guidance: "What went poorly? Misalignment, rework, unclear tasks, bugs. Give one concrete example.",
+    id: "roles_contribution",
+    title: "תרומה אישית ותפקידים",
+    guidance: "Individual contributions and role clarity. Did everyone contribute? Were roles clear? Anyone took extra responsibility or stepped back?",
     questionHints: [
-      "מה היה מתסכל השבוע?",
-      "איפה בזבזתם זמן על דברים שאפשר היה למנוע?",
-      "היו אי-הבנות בצוות?",
-      "משהו שנתקעתם עליו יותר מדי?",
-      "מה הייתם עושים אחרת בדיעבד?"
+      "איך הייתה חלוקת העבודה השבוע?",
+      "כל אחד ידע מה התפקיד שלו?",
+      "מישהו לקח על עצמו יותר מדי?",
+      "הרגשתם שהעומס מחולק בצורה הוגנת?",
+      "מי הפתיע אתכם לטובה השבוע?"
     ]
   },
   {
-    id: "blockers",
-    title: "חסמים",
-    guidance: "What blocked progress? Technical, dependencies, communication, time. Include type and impact.",
+    id: "challenges_conflicts",
+    title: "אתגרים וחיכוכים",
+    guidance: "Team challenges, disagreements, tensions. How were conflicts handled? What caused friction? Be honest about difficulties.",
     questionHints: [
-      "מה עיכב אתכם השבוע?",
-      "היו תלויות שחיכיתם להן?",
-      "משהו טכני שתקע אתכם?",
-      "חסרה לכם החלטה או מידע ממישהו?",
-      "כמה זמן איבדתם בגלל החסם הזה?"
+      "היו חילוקי דעות או מתחים בצוות?",
+      "איך התמודדתם עם אי-הסכמות?",
+      "משהו יצר תסכול בעבודה המשותפת?",
+      "היה רגע לא נעים שצריך לדבר עליו?",
+      "מה היה האתגר הכי גדול בעבודת הצוות?"
     ]
   },
   {
-    id: "decisions",
-    title: "החלטות חשובות",
-    guidance: "Key decision made and why. One decision is enough if concrete.",
+    id: "decisions_process",
+    title: "קבלת החלטות בצוות",
+    guidance: "How does the team make decisions? Is everyone heard? Who leads? Consensus vs one person decides? Concrete example of a decision made together.",
     questionHints: [
-      "איזו החלטה חשובה קיבלתם השבוע?",
-      "עמדתם בפני דילמה? מה בחרתם ולמה?",
-      "שקלתם כמה אפשרויות - מה הכריע?",
-      "יש החלטה שאתם לא בטוחים בה?",
-      "מה היו החלופות שוויתרתם עליהן?"
+      "איך קיבלתם החלטות השבוע?",
+      "כולם הרגישו שיש להם מקום להשפיע?",
+      "מי בדרך כלל מוביל את ההחלטות?",
+      "היה ויכוח על משהו - איך הגעתם להסכמה?",
+      "יש החלטה שלא כולם היו מרוצים ממנה?"
     ]
   },
   {
-    id: "risks",
-    title: "סיכונים לשבוע הבא",
-    guidance: "What might fail next week? Add one mitigation idea.",
+    id: "team_mood",
+    title: "אווירה ומוטיבציה",
+    guidance: "Team morale, energy, motivation. Are people engaged or burned out? What affects the team spirit? Celebrations or frustrations.",
     questionHints: [
-      "מה עלול להשתבש בשבוע הבא?",
-      "יש משהו שמדאיג אתכם קדימה?",
-      "איפה יש אי-ודאות שצריך להתכונן אליה?",
-      "מה התוכנית אם X לא יעבוד?",
-      "איך אפשר להקטין את הסיכון הזה?"
+      "מה האווירה בצוות השבוע?",
+      "הרגשתם מוטיבציה או עייפות?",
+      "היה משהו שהעלה את הרוח?",
+      "משהו פגע במורל של הצוות?",
+      "חגגתם הצלחות קטנות?"
     ]
   },
   {
-    id: "next_actions",
-    title: "פעולות לשבוע הבא",
-    guidance: "Exactly 3 concrete actions: what + owner + target (date/week).",
+    id: "learning_growth",
+    title: "למידה וצמיחה כצוות",
+    guidance: "What did the team learn about working together? Insights about collaboration. What would they do differently? Growth mindset.",
     questionHints: [
-      "מה שלוש המשימות הכי חשובות לשבוע הבא?",
-      "מי אחראי על כל משימה?",
-      "מתי כל משימה צריכה להסתיים?",
-      "מה היעד הראשון שתתחילו איתו?",
-      "איך תדעו שהמשימה הושלמה?"
+      "מה למדתם על עצמכם כצוות השבוע?",
+      "יש משהו שהייתם עושים אחרת?",
+      "מה תיקח איתך לשבוע הבא?",
+      "גיליתם משהו חדש על איך לעבוד ביחד?",
+      "איזה שיפור קטן אפשר לעשות בעבודת הצוות?"
     ]
   },
 ];
