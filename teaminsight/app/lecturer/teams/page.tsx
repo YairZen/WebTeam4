@@ -8,6 +8,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+/* --- ADDED: Import Icon for the button --- */
+import { BarChart3 } from "lucide-react";
 
 type Team = {
   teamId: string;
@@ -110,8 +112,9 @@ export default function TeamsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 w-full py-10">
       <div className="w-full px-4 md:px-8">
+        
         {/* Header row */}
-        <div className="flex items-start md:items-center justify-between gap-4 mb-6">
+        <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-4xl font-bold text-gray-800">Teams Overview</h1>
             <p className="text-gray-600 mt-1 text-sm">
@@ -119,12 +122,24 @@ export default function TeamsPage() {
             </p>
           </div>
 
-          <Link
-            href="/lecturer/dashboard"
-            className="text-purple-600 hover:text-purple-700 hover:underline text-sm whitespace-nowrap font-medium"
-          >
-            ← Back to Dashboard
-          </Link>
+          {/* --- ADDED: Container for Actions (Back link + Analytics Button) --- */}
+          <div className="flex flex-col items-end gap-3">
+            <Link
+                href="/lecturer/dashboard"
+                className="text-purple-600 hover:text-purple-700 hover:underline text-sm whitespace-nowrap font-medium"
+            >
+                ← Back to Dashboard
+            </Link>
+
+            {/* --- ADDED: The Analytics View Button --- */}
+            <Link href="/lecturer/analytics">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md transition-colors">
+                    Analytics View <BarChart3 size={18} />
+                </button>
+            </Link>
+          </div>
+          {/* --- END ADDED SECTION --- */}
+
         </div>
 
         {loading ? (
@@ -330,4 +345,3 @@ function KpiCard({
     </div>
   );
 }
-

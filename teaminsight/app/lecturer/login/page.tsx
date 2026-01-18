@@ -79,7 +79,7 @@ export default function LecturerLoginPage() {
     suitable for all lecturer pages
   */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-200">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-lg"
