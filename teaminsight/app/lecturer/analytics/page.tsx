@@ -172,17 +172,48 @@ export default function TeamsAnalyticsPage() {
           />
         </div>
 
-        {/* Selected Team Details Banner */}
+       {/* Selected Team Details Banner */}
         {selectedTeamDetails && (
-            <div className="bg-white border border-blue-100 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 animate-fadeIn w-full">
+            <div className="bg-white border border-blue-100 rounded-xl shadow-lg p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 animate-fadeIn w-full">
                 <div>
-                    <h2 className="text-2xl font-bold text-blue-900 mb-2 flex items-center gap-2">
-                        <Users className="text-blue-600"/> {selectedTeamDetails.teamId}
-                    </h2>
-                    <div className="text-blue-800 mb-1">
+                    <div className="flex items-center gap-3 mb-2">
+                        {/* Team Name */}
+                        <h2 className="text-2xl font-bold text-blue-900 flex items-center gap-2">
+                            <Users className="text-blue-600"/> {selectedTeamDetails.teamId}
+                        </h2>
+                        
+                        {/* --- NEW: Status Badge --- */}
+                        <span className={`px-3 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wide ${
+                            selectedTeamDetails.status === 'red' ? 'bg-red-100 text-red-700 border-red-200' :
+                            selectedTeamDetails.status === 'yellow' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                            'bg-green-100 text-green-700 border-green-200'
+                        }`}>
+                            {selectedTeamDetails.status === 'red' ? 'Critical' : 
+                             selectedTeamDetails.status === 'yellow' ? 'Warning' : 'On Track'}
+                        </span>
+                        {/* ------------------------- */}
+                    </div>
+                    
+                    <div className="text-blue-800 mb-2">
                       <span className="font-semibold">Project:</span> {selectedTeamDetails.projectName || "N/A"}
                     </div>
+
+                    {/* Members List */}
+                    {selectedTeamDetails.members && selectedTeamDetails.members.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-gray-500">Members:</span>
+                            {selectedTeamDetails.members.map((m) => (
+                                <span key={m.memberId} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md border border-gray-200">
+                                    {m.displayName}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-sm text-gray-400 italic">No members listed</div>
+                    )}
+
                 </div>
+                
                 <div className="flex gap-3">
                     <button 
                         onClick={() => setFilters({...filters, teamId: "all"})} 
