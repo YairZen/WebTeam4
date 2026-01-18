@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import Cerebras from "@cerebras/cerebras_cloud_sdk";
 import {
   REFLECTION_CONTROLLER_PROMPT,
   REFLECTION_INTERVIEWER_PROMPT,
@@ -7,10 +7,10 @@ import {
 } from "./reflectionPrompts";
 import { REFLECTION_TOPICS } from "@/lib/reflection/topics";
 
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
+const apiKey = process.env.CEREBRAS_API_KEY;
+if (!apiKey) throw new Error("Missing CEREBRAS_API_KEY");
 
-const ai = new GoogleGenAI({ apiKey });
+const client = new Cerebras({ apiKey });
 
 export type ChatMsg = { role: "user" | "model"; text: string };
 
@@ -149,11 +149,11 @@ export async function runReflectionController(input: ControllerInput): Promise<C
     policy,
   });
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      { role: "user" as const, parts: [{ text: REFLECTION_CONTROLLER_PROMPT }] },
-      { role: "user" as const, parts: [{ text: payload }] },
+  const response = await client.chat.completions.create({
+    model: "qwen-3-235b-a22b-instruct-2507",
+    messages: [
+      { role: "user", content: REFLECTION_CONTROLLER_PROMPT },
+      { role: "user", content: payload },
     ],
   });
 
@@ -172,7 +172,7 @@ export async function runReflectionController(input: ControllerInput): Promise<C
     turnCount: input.turnCount || 0,
   };
 
-  return safeParseController(response.text ?? "{}", fallback);
+  return safeParseController(response.choices[0]?.message?.content ?? "{}", fallback);
 }
 
 export async function runReflectionInterviewer(args: {
@@ -181,15 +181,15 @@ export async function runReflectionInterviewer(args: {
 }): Promise<string> {
   const payload = JSON.stringify(args);
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      { role: "user" as const, parts: [{ text: REFLECTION_INTERVIEWER_PROMPT }] },
-      { role: "user" as const, parts: [{ text: payload }] },
+  const response = await client.chat.completions.create({
+    model: "qwen-3-235b-a22b-instruct-2507",
+    messages: [
+      { role: "user", content: REFLECTION_INTERVIEWER_PROMPT },
+      { role: "user", content: payload },
     ],
   });
 
-  return (response.text ?? "").trim() || "קיבלתי. אפשר לשתף עוד קצת?";
+  return (response.choices[0]?.message?.content ?? "").trim() || "קיבלתי. אפשר לשתף עוד קצת?";
 }
 
 export async function runReflectionFinalSummary(input: {
@@ -198,15 +198,15 @@ export async function runReflectionFinalSummary(input: {
 }): Promise<string> {
   const payload = JSON.stringify(input);
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      { role: "user" as const, parts: [{ text: REFLECTION_FINAL_SUMMARY_PROMPT }] },
-      { role: "user" as const, parts: [{ text: payload }] },
+  const response = await client.chat.completions.create({
+    model: "qwen-3-235b-a22b-instruct-2507",
+    messages: [
+      { role: "user", content: REFLECTION_FINAL_SUMMARY_PROMPT },
+      { role: "user", content: payload },
     ],
   });
 
-  return (response.text ?? "").trim();
+  return (response.choices[0]?.message?.content ?? "").trim();
 }
 
 export type ReflectionEval = {
@@ -235,15 +235,15 @@ export async function runReflectionEvaluation(input: {
     policy,
   });
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [
-      { role: "user" as const, parts: [{ text: REFLECTION_EVALUATION_PROMPT }] },
-      { role: "user" as const, parts: [{ text: payload }] },
+  const response = await client.chat.completions.create({
+    model: "qwen-3-235b-a22b-instruct-2507",
+    messages: [
+      { role: "user", content: REFLECTION_EVALUATION_PROMPT },
+      { role: "user", content: payload },
     ],
   });
 
-  const raw = stripCodeFences(response.text ?? "{}");
+  const raw = stripCodeFences(response.choices[0]?.message?.content ?? "{}");
 
   try {
     const obj = JSON.parse(raw);
