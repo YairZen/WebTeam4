@@ -11,7 +11,10 @@ export default function TeamGate({ children }: { children: React.ReactNode }) {
     async function check() {
       try {
         const res = await fetch("/api/team/me", { credentials: "include" });
-        if (!res.ok) {
+        const data = await res.json();
+
+        // Check if team exists in response (not just res.ok)
+        if (!data?.team) {
           router.replace("/team/join");
           return;
         }
