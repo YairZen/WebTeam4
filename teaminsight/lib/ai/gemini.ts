@@ -28,6 +28,7 @@ export type NextIntent = {
   questionGoal: string;
   missingInfo: string[];
   userContext: string;
+  historyReference: string;
 };
 
 export type ReflectionPolicy = {
@@ -116,6 +117,7 @@ function safeParseController(raw: string, fallback: ControllerResult): Controlle
         questionGoal: typeof ni.questionGoal === "string" ? ni.questionGoal.trim() : "",
         missingInfo,
         userContext: typeof ni.userContext === "string" ? ni.userContext.trim() : "",
+        historyReference: typeof ni.historyReference === "string" ? ni.historyReference.trim() : "",
       },
 
       readyToSubmit: (obj as any).readyToSubmit === true,
@@ -169,6 +171,7 @@ export async function runReflectionController(input: ControllerInput): Promise<C
       questionGoal: "understand how the team collaborated this week",
       missingInfo: ["concrete example of teamwork", "who helped whom", "how it felt"],
       userContext: "starting the conversation about team dynamics",
+      historyReference: "",
     },
     readyToSubmit: false,
     clarifyCount: input.clarifyCount || 0,
