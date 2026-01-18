@@ -18,7 +18,10 @@ export function KpiStats({ qualityData }: { qualityData: QualityData[] }) {
   });
 
   const globalAvgWords = totalSessionsAll > 0 ? Math.round(totalWordsAll / totalSessionsAll) : 0;
-  const globalAvgTime = totalSessionsAll > 0 ? Math.round(totalDurationAll / totalSessionsAll) : 0;
+
+  // חישוב ממוצע הזמן (דקות)
+  const globalAvgTimeSeconds = totalSessionsAll > 0 ? (totalDurationAll / totalSessionsAll) : 0;
+  const globalAvgTimeMinutes = Math.round(globalAvgTimeSeconds / 60);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 w-full">
@@ -32,7 +35,7 @@ export function KpiStats({ qualityData }: { qualityData: QualityData[] }) {
       <StatCard 
         icon={<Clock className="text-purple-600" size={24} />} 
         label="Avg. Time per Session" 
-        value={`${globalAvgTime} min`} 
+        value={`${globalAvgTimeMinutes} min`}  // <-- התיקון כאן
         subtext="Engagement duration"
         color="bg-purple-50 border-purple-100"
       />
