@@ -10,7 +10,7 @@ export default function TeamGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function check() {
       try {
-        const res = await fetch("/api/team/me");
+        const res = await fetch("/api/team/me", { credentials: "include" });
         if (!res.ok) {
           router.replace("/team/join");
           return;
