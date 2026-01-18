@@ -8,7 +8,7 @@
  */
 
 const mongoose = require('mongoose');
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env' });
 
 // Announcement Schema (without automatic timestamps - we set them manually)
 const AnnouncementSchema = new mongoose.Schema({
