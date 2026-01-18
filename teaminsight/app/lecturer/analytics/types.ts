@@ -17,7 +17,7 @@ export type Team = {
 
 export type QualityData = {
   teamId: string;
-  avgWords: number;
+  avgMessages: number;
   avgDuration: number;
   lastActivity: number | null;
   latestStatus: string | null;
