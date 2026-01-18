@@ -25,7 +25,7 @@ export function KpiStats({ qualityData }: { qualityData: QualityData[] }) {
 
   // Calculate average time in minutes (assuming duration is in seconds)
   const globalAvgTimeSeconds = totalSessionsAll > 0 ? (totalDurationAll / totalSessionsAll) : 0;
-  const globalAvgTimeMinutes = Math.round(globalAvgTimeSeconds / 60);
+  const globalAvgTimeMinutes = Math.round(globalAvgTimeSeconds);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 w-full">
