@@ -159,7 +159,7 @@ export async function runReflectionController(input: ControllerInput): Promise<C
   });
 
   const response = await client.chat.completions.create({
-    model: "qwen-3-235b-a22b-instruct-2507",
+    model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_CONTROLLER_PROMPT },
       { role: "user", content: payload },
@@ -199,7 +199,7 @@ export async function runReflectionInterviewer(args: {
   });
 
   const response = await client.chat.completions.create({
-    model: "qwen-3-235b-a22b-instruct-2507",
+    model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_INTERVIEWER_PROMPT },
       { role: "user", content: payload },
@@ -216,7 +216,7 @@ export async function runReflectionFinalSummary(input: {
   const payload = JSON.stringify(input);
 
   const response = await client.chat.completions.create({
-    model: "qwen-3-235b-a22b-instruct-2507",
+    model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_FINAL_SUMMARY_PROMPT },
       { role: "user", content: payload },
@@ -256,7 +256,7 @@ export async function runReflectionEvaluation(input: {
   });
 
   const response = await client.chat.completions.create({
-    model: "qwen-3-235b-a22b-instruct-2507",
+    model: "llama-3.3-70b",
     messages: [
       { role: "user", content: REFLECTION_EVALUATION_PROMPT },
       { role: "user", content: payload },
