@@ -31,6 +31,20 @@ export default function TeamsManagePage() {
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
+  // CSV modal states
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvTeamId, setCsvTeamId] = useState<string | null>(null);
+  const [csvStudents, setCsvStudents] = useState<Member[]>([]);
+  const [selectedCsv, setSelectedCsv] = useState<string[]>([]);
+
+  const [uploading, setUploading] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+
+
+  const [manualMemberId, setManualMemberId] = useState("");
+  const [manualDisplayName, setManualDisplayName] = useState("");
+
+
   function loadTeams() {
     setLoading(true);
     fetch("/api/teams")
@@ -47,54 +61,79 @@ export default function TeamsManagePage() {
     setSaving(true);
 
     try {
-      // 1) ask for details
-      const memberId = prompt("Enter Member ID:");
-      if (!memberId?.trim()) return;
+      const res = await fetch("/api/lecturer/CsvUpload");
+      const data = await res.json();
 
-      const displayName = prompt("Enter Display Name:");
-      if (!displayName?.trim()) return;
-
-      // 2) get current team members (so we don't overwrite)
-      const resTeam = await fetch(`/api/teams/${encodeURIComponent(teamIdToUpdate)}`);
-      const teamData = await resTeam.json();
-
-      if (!teamData?.ok) {
-        setError(teamData?.error || "Failed to load team.");
+      if (!data?.ok) {
+        setError("Failed to load CSV students");
         return;
       }
 
-      const currentMembers: Member[] = teamData.team.members ?? [];
-
-      // 3) validate uniqueness
-      if (currentMembers.some((m) => m.memberId === memberId.trim())) {
-        setError("Member ID must be unique within the team.");
-        return;
-      }
-
-      const updatedMembers = [
-        ...currentMembers,
-        { memberId: memberId.trim(), displayName: displayName.trim() },
-      ];
-
-      // 4) update team (your API uses PUT and expects full members array)
-      const resPut = await fetch(`/api/teams/${encodeURIComponent(teamIdToUpdate)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ members: updatedMembers }),
-      });
-
-      const putData = await resPut.json();
-      if (!putData?.ok) {
-        setError(putData?.error || "Failed to add student.");
-        return;
-      }
-
-      setOkMsg("Student added successfully.");
-      loadTeams();
+      setCsvStudents(data.students);
+      setSelectedCsv([]);
+      setManualMemberId("");
+      setManualDisplayName("");
+      setCsvTeamId(teamIdToUpdate); // פותח את ה-Modal
     } finally {
       setSaving(false);
     }
   }
+
+  async function addManualStudent() {
+    if (!csvTeamId) return;
+
+    if (!manualMemberId.trim() || !manualDisplayName.trim()) {
+      setError("Fill Member ID and Name");
+      return;
+    }
+
+    await fetch(`/api/teams/${csvTeamId}/add-member`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        memberId: manualMemberId.trim(),
+        displayName: manualDisplayName.trim(),
+        fromCsv: false,
+      }),
+    });
+
+    setOkMsg("Student added");
+    loadTeams();
+  }
+
+  async function addSelectedCsvStudents() {
+    if (!csvTeamId) return;
+
+    for (const id of selectedCsv) {
+      const s = csvStudents.find((x) => x.memberId === id);
+      if (!s) continue;
+
+      await fetch(`/api/teams/${csvTeamId}/add-member`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberId: s.memberId,
+          displayName: s.displayName,
+          fromCsv: true,
+        }),
+      });
+    }
+
+    setOkMsg("CSV students added");
+    loadTeams();
+    closeCsvModal();
+  }
+
+  function closeCsvModal() {
+    setCsvTeamId(null);
+    setCsvStudents([]);
+    setSelectedCsv([]);
+  }
+
+
+
+
+
 
   async function removeStudentFromTeam(teamIdToUpdate: string) {
     setError(null);
@@ -243,11 +282,74 @@ export default function TeamsManagePage() {
     }
   }
 
+  async function openCsvList() {
+    setError(null);
+
+    const res = await fetch("/api/lecturer/CsvUpload");
+    const data = await res.json();
+
+    if (!data?.ok) {
+      setError("Failed to load CSV students");
+      return;
+    }
+
+    setCsvStudents(data.students);
+    setSelectedCsv([]);
+    setCsvOpen(true);
+  }
+
+  function addSelectedFromCsv() {
+    const newOnes = csvStudents.filter(
+      (s) =>
+        selectedCsv.includes(s.memberId) &&
+        !members.some((m) => m.memberId === s.memberId)
+    );
+
+    setMembers((prev) => [...prev, ...newOnes]);
+    setCsvOpen(false);
+  }
+
+  async function uploadCsv() {
+    if (!csvFile) {
+      setError("Please select a CSV file");
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+    setOkMsg(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", csvFile);
+
+      const res = await fetch("/api/lecturer/CsvUpload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!data?.ok) {
+        setError(data?.error || "CSV upload failed");
+        return;
+      }
+
+      setOkMsg(`CSV uploaded (${data.count} students)`);
+      setCsvFile(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+
+
   return (
     <main className="min-h-screen bg-gray-100 px-4 md:px-8 py-10">
       <div className="w-full max-w-screen-xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-start md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Left */}
           <div>
             <h1 className="text-3xl font-bold">Teams Management</h1>
             <p className="text-gray-600 mt-1 text-sm">
@@ -255,13 +357,49 @@ export default function TeamsManagePage() {
             </p>
           </div>
 
-          <Link
-            href="/lecturer/teams"
-            className="text-blue-600 hover:underline text-sm whitespace-nowrap"
-          >
-            ← Back to Teams
-          </Link>
+          {/* Right */}
+          <div className="flex items-center gap-3">
+            {/* Upload CSV */}
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
+                className="hidden"
+              />
+              <span className="inline-flex items-center justify-center
+                     w-32 h-10
+                     rounded-md bg-green-600 text-white text-sm
+                     hover:bg-green-700">
+                Choose File
+              </span>
+            </label>
+
+            <button
+              type="button"
+              onClick={uploadCsv}
+              disabled={uploading}
+              className="inline-flex items-center justify-center
+               w-32 h-10
+               rounded-md bg-red-600 text-white text-sm
+               hover:bg-red-700 disabled:opacity-60"
+            >
+              {uploading ? "Uploading..." : "Upload CSV"}
+            </button>
+
+            {/* spacing to Back */}
+            <div className="ml-4">
+              <Link
+                href="/lecturer/teams"
+                className="text-blue-600 hover:underline text-sm whitespace-nowrap"
+              >
+                ← Back to Teams
+              </Link>
+            </div>
+          </div>
+
         </div>
+
 
         {/* Create Team Card */}
         <div className="bg-white rounded-lg shadow p-6">
@@ -381,7 +519,7 @@ export default function TeamsManagePage() {
             )}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 flex items-center gap-3">
             <button
               type="button"
               onClick={createTeam}
@@ -390,9 +528,17 @@ export default function TeamsManagePage() {
             >
               {saving ? "Saving..." : "Create Team"}
             </button>
+
+            <button
+              type="button"
+              onClick={openCsvList}
+              className="px-4 py-2 rounded-md bg-green-600 text-white text-sm hover:bg-green-700"
+            >
+
+              Add From List
+            </button>
           </div>
         </div>
-
         {/* Existing Teams */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="px-6 py-4 border-b flex items-center justify-between">
@@ -485,6 +631,115 @@ export default function TeamsManagePage() {
           )}
         </div>
       </div>
+      {csvTeamId && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded w-[420px] max-h-[75vh] overflow-y-auto">
+
+            <h3 className="font-semibold mb-3">Add Student</h3>
+
+            {/* Manual */}
+            <div className="mb-4">
+              <input
+                placeholder="Member ID"
+                value={manualMemberId}
+                onChange={(e) => setManualMemberId(e.target.value)}
+                className="w-full border px-2 py-1 mb-2"
+              />
+              <input
+                placeholder="Display Name"
+                value={manualDisplayName}
+                onChange={(e) => setManualDisplayName(e.target.value)}
+                className="w-full border px-2 py-1 mb-2"
+              />
+              <button
+                onClick={addManualStudent}
+                className="px-3 py-1 bg-green-600 text-white rounded"
+              >
+                Add Manual Student
+              </button>
+            </div>
+
+            <hr className="my-3" />
+
+            {/* CSV */}
+            {csvStudents.map((s) => (
+              <label key={s.memberId} className="block text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedCsv.includes(s.memberId)}
+                  onChange={() =>
+                    setSelectedCsv((prev) =>
+                      prev.includes(s.memberId)
+                        ? prev.filter((x) => x !== s.memberId)
+                        : [...prev, s.memberId]
+                    )
+                  }
+                />
+                <span className="ml-2">
+                  {s.displayName} ({s.memberId})
+                </span>
+              </label>
+            ))}
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={closeCsvModal} className="border px-3 py-1 rounded">
+                Cancel
+              </button>
+              <button
+                onClick={addSelectedCsvStudents}
+                disabled={selectedCsv.length === 0}
+                className="bg-blue-600 text-white px-3 py-1 rounded"
+              >
+                Add Selected
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {csvOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded w-[420px] max-h-[70vh] overflow-y-auto">
+            <h3 className="font-semibold mb-3">Add students from list</h3>
+
+            {csvStudents.map((s) => (
+              <label key={`${s.memberId}`} className="block text-sm mb-1">
+                <input
+                  type="checkbox"
+                  checked={selectedCsv.includes(s.memberId)}
+                  onChange={() =>
+                    setSelectedCsv((prev) =>
+                      prev.includes(s.memberId)
+                        ? prev.filter((x) => x !== s.memberId)
+                        : [...prev, s.memberId]
+                    )
+                  }
+                />
+                <span className="ml-2">
+                  {s.displayName} ({s.memberId})
+                </span>
+              </label>
+            ))}
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setCsvOpen(false)}
+                className="px-3 py-1 border rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addSelectedFromCsv}
+                className="px-3 py-1 bg-blue-600 text-white rounded"
+              >
+                Add Selected
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }
