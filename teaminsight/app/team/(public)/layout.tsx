@@ -44,8 +44,8 @@ export default function PublicTeamLayout({
         className={[
           "fixed top-0 left-0 right-0 z-50",
           "h-14",
-          "bg-emerald-600",
-          "shadow-[0_10px_30px_rgba(16,185,129,0.25)]",
+          "bg-gradient-to-r from-purple-600 to-indigo-600",
+          "shadow-[0_10px_30px_rgba(79,70,229,0.25)]",
           "transition-transform duration-200 ease-out",
           showBar ? "translate-y-0" : "-translate-y-full",
         ].join(" ")}

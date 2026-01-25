@@ -70,25 +70,25 @@ export default function TeamLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-[#E8EDF3] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-purple-100 to-indigo-200 relative overflow-hidden">
       {/* Soft color blobs */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-28 -left-28 h-96 w-96 rounded-full bg-emerald-300/16 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-sky-300/16 blur-3xl" />
-        <div className="absolute top-1/3 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-indigo-300/10 blur-3xl" />
+        <div className="absolute -top-28 -left-28 h-96 w-96 rounded-full bg-purple-300/16 blur-3xl" />
+        <div className="absolute -bottom-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-indigo-300/16 blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-fuchsia-300/10 blur-3xl" />
       </div>
 
       {/* Floating product-themed icons (team + reflection + AI chat) */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <Users className="absolute -top-10 -left-10 h-44 w-44 text-emerald-800 opacity-[0.06] rotate-[-12deg]" />
+        <Users className="absolute -top-10 -left-10 h-44 w-44 text-purple-900 opacity-[0.06] rotate-[-12deg]" />
         <Brain className="absolute top-8 -right-10 h-44 w-44 text-indigo-900 opacity-[0.055] rotate-[10deg]" />
-        <MessageSquare className="absolute -bottom-12 left-10 h-48 w-48 text-slate-900 opacity-[0.05] rotate-[8deg]" />
-        <PenLine className="absolute bottom-10 -right-8 h-40 w-40 text-sky-900 opacity-[0.05] rotate-[-10deg]" />
-        <ClipboardCheck className="absolute top-1/2 -left-10 h-40 w-40 text-slate-900 opacity-[0.04] rotate-[14deg]" />
-        <Sparkles className="absolute top-24 left-1/2 -translate-x-1/2 h-36 w-36 text-emerald-900 opacity-[0.04] rotate-[6deg]" />
+        <MessageSquare className="absolute -bottom-12 left-10 h-48 w-48 text-indigo-900 opacity-[0.05] rotate-[8deg]" />
+        <PenLine className="absolute bottom-10 -right-8 h-40 w-40 text-fuchsia-900 opacity-[0.05] rotate-[-10deg]" />
+        <ClipboardCheck className="absolute top-1/2 -left-10 h-40 w-40 text-purple-900 opacity-[0.04] rotate-[14deg]" />
+        <Sparkles className="absolute top-24 left-1/2 -translate-x-1/2 h-36 w-36 text-indigo-900 opacity-[0.04] rotate-[6deg]" />
       </div>
 
-      <div className="w-full max-w-xl rounded-2xl border border-slate-200/80 bg-[#F2F5FA] p-8 md:p-10 shadow-lg shadow-slate-900/5 relative">
+      <div className="w-full max-w-xl rounded-2xl border border-white/40 bg-white/80 backdrop-blur-sm p-8 md:p-10 shadow-lg shadow-slate-900/10 relative">
         <div className="flex items-start justify-between gap-4 mb-7">
           <div>
             <h1 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight mb-1">
@@ -100,7 +100,7 @@ export default function TeamLoginPage() {
           </div>
 
           <div className="h-11 w-11 rounded-2xl border border-slate-200 bg-white/40 backdrop-blur flex items-center justify-center">
-            <Users className="h-5 w-5 text-emerald-600" />
+            <Users className="h-5 w-5 text-purple-600" />
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function TeamLoginPage() {
               <input
                 value={teamId}
                 onChange={(e) => setTeamId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-[#EDEFF6] pl-10 pr-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 focus:border-emerald-300"
+                className="w-full rounded-xl border border-slate-200 bg-[#EDEFF6] pl-10 pr-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/40 focus:border-purple-300"
                 placeholder="e.g., T-001"
                 autoComplete="off"
               />
@@ -137,7 +137,7 @@ export default function TeamLoginPage() {
               <input
                 value={accessCode}
                 onChange={(e) => setAccessCode(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-[#EDEFF6] pl-10 pr-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 focus:border-emerald-300"
+                className="w-full rounded-xl border border-slate-200 bg-[#EDEFF6] pl-10 pr-3 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/40 focus:border-purple-300"
                 placeholder="Enter your access code"
                 type="password"
                 autoComplete="off"
@@ -147,15 +147,14 @@ export default function TeamLoginPage() {
 
           <button
             disabled={loading}
-            className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-white font-semibold disabled:opacity-60 hover:bg-emerald-500 active:translate-y-[1px] flex items-center justify-center gap-2 shadow-sm shadow-emerald-900/10"
-            type="submit"
+            className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-3 text-white font-semibold disabled:opacity-60 hover:from-purple-500 hover:to-indigo-500 active:translate-y-[1px] flex items-center justify-center gap-2 shadow-sm shadow-indigo-900/10"
           >
             <Play className="h-4 w-4" />
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-  
+
       </div>
     </div>
   );
