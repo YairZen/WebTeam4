@@ -12,6 +12,7 @@ import Link from "next/link";
 import { StatusBadge, KpiCard, BackLink, LoadingState } from "@/components/ui";
 import type { TeamStatus } from "@/lib/types";
 import { STATUS_RANK } from "@/lib/constants";
+import { BarChart3 } from "lucide-react";
 
 type Team = {
   teamId: string;
@@ -115,7 +116,23 @@ export default function TeamsPage() {
             </p>
           </div>
 
-          <BackLink href="/lecturer/dashboard" label="Back to Dashboard" />
+ {/* --- ADDED: Container for Actions (Back link + Analytics Button) --- */}
+          <div className="flex flex-col items-end gap-3">
+            <Link
+                href="/lecturer/dashboard"
+                className="text-purple-600 hover:text-purple-700 hover:underline text-sm whitespace-nowrap font-medium"
+            >
+                ← Back to Dashboard
+            </Link>
+
+            {/* --- ADDED: The Analytics View Button --- */}
+            <Link href="/lecturer/analytics">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md transition-colors">
+                    Analytics View <BarChart3 size={18} />
+                </button>
+            </Link>
+          </div>
+          {/* --- END ADDED SECTION --- */}
         </div>
 
         {loading ? (
@@ -239,3 +256,4 @@ export default function TeamsPage() {
     </main>
   );
 }
+

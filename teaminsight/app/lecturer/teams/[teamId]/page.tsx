@@ -126,8 +126,8 @@ export default function TeamDetailsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {team.members.map((m) => (
-                    <tr key={m.memberId} className="hover:bg-gray-50 transition">
+                  {team.members.map((m, index) => (
+                    <tr key={`${m.memberId}-${index}`} className="hover:bg-gray-50 transition">
                       <td className="px-4 py-3 border-b text-sm text-gray-900 font-medium">
                         {m.memberId}
                       </td>
