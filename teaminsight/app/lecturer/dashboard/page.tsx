@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Lecturer Dashboard Page
  * -----------------------
@@ -8,12 +10,41 @@
  * Refactored to use shared UI components
  */
 
-import { Users, BarChart3, Bell, MessageSquare, Settings } from "lucide-react";
+import { useState } from "react"; 
+import { useRouter } from "next/navigation"; 
+import Link from "next/link";
+import { Users, BarChart3, Bell, MessageSquare, Settings, LogOut} from "lucide-react";
 import { DashboardCard } from "@/components/ui";
 
 export default function LecturerDashboardPage() {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/lecturer/logout", { method: "POST" });
+      router.push("/"); // Redirect to landing/login page
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed", error);
+      setIsLoggingOut(false);
+    }
+  }
   return (
-    <main className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex flex-col items-center px-6 py-12">
+    <main className="min-h-screen w-full relative bg-gradient-to-br from-purple-50 to-blue-50 flex flex-col items-center px-6 py-12">
+
+      {/* <--- 7. Logout Button (Top Right) */}
+      <button
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+        className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-white/80 hover:bg-red-50 rounded-lg shadow-sm transition-all border border-transparent hover:border-red-100 backdrop-blur-sm"
+      >
+        <LogOut size={18} />
+        {isLoggingOut ? "Logging out..." : "Logout"}
+      </button>
+
       {/* Page Title */}
       <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
         Lecturer Dashboard
@@ -23,6 +54,7 @@ export default function LecturerDashboardPage() {
 
       {/* Navigation Cards */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full">
+        
         {/* Teams Overview */}
         <DashboardCard
           title="Teams Overview"
