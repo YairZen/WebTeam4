@@ -8,7 +8,7 @@
 5. Constraints
 6. Backend (API & Infrastructure)
 7. Data Flow (Backend to Frontend)
-8. AI (Gemini): Free Chat & Guided Reflection
+8. AI (CEREBRAS): Free Chat & Guided Reflection
 9. Lecturer Client-Side Architecture
 
 ---
@@ -253,7 +253,7 @@ Frontend → Next.js API Route → Mongoose → MongoDB → API Response → Fro
 
 ---
 
-## 8. AI (Gemini): Free Chat & Guided Reflection
+## 8. AI (CEREBRAS): Free Chat & Guided Reflection
 
 The system supports two Gemini-based experiences for teams:
 
